@@ -25,8 +25,6 @@ function playChime() {
     const AudioContext = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
     if (!AudioContext) return;
     const ctx = new AudioContext();
-
-    // Three-note ascending chime: C5 → E5 → G5
     const notes = [523.25, 659.25, 783.99];
     notes.forEach((freq, i) => {
       const osc = ctx.createOscillator();
@@ -87,19 +85,17 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [activeProperty, setActiveProperty] = useState("Sunrise PG - Branch 1");
+  const [activeProperty, setActiveProperty] = useState("Ideal Hostel — Main Branch");
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [chimePlayed, setChimePlayed] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
 
   const properties = [
-    "Sunrise PG - Branch 1",
-    "Greenwood Hostel - Branch 2",
-    "Elite Residences - Branch 3",
+    "Ideal Hostel — Main Branch",
+    "Ideal Hostel — Annex",
   ];
 
-  /* Fetch active maintenance tickets and build notification list */
   const buildNotifications = useCallback(async () => {
     const notifs: Notification[] = [];
     try {
@@ -125,12 +121,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
       // silent
     }
 
-    // Static reminders for dues & quick actions
     notifs.push({
       id: "dues-alert",
       type: "payment",
-      title: "12 tenants have pending dues",
-      body: "₹47,200 outstanding. Visit Finance & Ledger to follow up.",
+      title: "Check guest dues",
+      body: "Visit Finance & Ledger to review outstanding payments.",
       href: "/dashboard/finance",
       time: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
       read: false,
@@ -139,23 +134,20 @@ export default function Header({ onMenuClick }: HeaderProps) {
     setNotifications(notifs);
   }, []);
 
-  /* Load notifications on mount, play chime once */
   useEffect(() => {
     buildNotifications();
   }, [buildNotifications]);
 
-  /* Play chime the first time the notification bell has unread items */
   useEffect(() => {
     if (!chimePlayed && notifications.some((n) => !n.read)) {
       const timer = setTimeout(() => {
         playChime();
         setChimePlayed(true);
-      }, 1200); // slight delay so page is settled
+      }, 1200);
       return () => clearTimeout(timer);
     }
   }, [notifications, chimePlayed]);
 
-  /* Close bell dropdown on outside click */
   useEffect(() => {
     if (!bellOpen) return;
     const handler = (e: MouseEvent) => {
@@ -182,7 +174,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 card-shadow">
+    <header className="h-16 bg-[#0a0a0a] border-b border-[#1e1e1e] sticky top-0 z-30 card-shadow">
       <div className="h-full flex items-center justify-between px-3 sm:px-6">
         {/* ── Left: Menu & Property Switcher ──────────────────── */}
         <div className="flex items-center gap-2 sm:gap-3">
@@ -190,7 +182,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <button
             onClick={onMenuClick}
             aria-label="Open Navigation Menu"
-            className="lg:hidden min-w-[44px] min-h-[44px] -ml-1 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-default cursor-pointer"
+            className="lg:hidden min-w-[44px] min-h-[44px] -ml-1 rounded-xl text-[#d1d1d1] hover:text-white hover:bg-[#1a1a1a] flex items-center justify-center transition-default cursor-pointer"
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -199,16 +191,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300 transition-default group cursor-pointer"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[#2a2a2a] bg-[#141414] hover:bg-[#1e1e1e] hover:border-[#383838] transition-default group cursor-pointer"
             >
-              <div className="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center shrink-0">
+              <div className="w-6 h-6 rounded-lg bg-[#f5c800] text-black flex items-center justify-center shrink-0">
                 <Building2 className="w-3.5 h-3.5" />
               </div>
-              <span className="text-xs sm:text-sm font-bold text-slate-900 max-w-[140px] sm:max-w-[200px] truncate block">
+              <span className="text-xs sm:text-sm font-bold text-white max-w-[140px] sm:max-w-[200px] truncate block">
                 {activeProperty}
               </span>
               <ChevronDown
-                className={`w-4 h-4 text-slate-500 group-hover:text-slate-900 transition-transform shrink-0 ml-0.5 ${
+                className={`w-4 h-4 text-[#888] group-hover:text-white transition-transform shrink-0 ml-0.5 ${
                   isDropdownOpen ? "rotate-180" : ""
                 }`}
               />
@@ -220,8 +212,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   className="fixed inset-0 z-10"
                   onClick={() => setIsDropdownOpen(false)}
                 />
-                <div className="absolute top-full mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg z-20 py-2 animate-in fade-in slide-in-from-top-2">
-                  <div className="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <div className="absolute top-full mt-2 w-64 bg-[#141414] border border-[#2a2a2a] rounded-xl shadow-lg z-20 py-2 animate-in fade-in slide-in-from-top-2">
+                  <div className="px-3 py-1.5 text-[11px] font-bold text-[#888] uppercase tracking-wider">
                     Your Portfolio
                   </div>
                   {properties.map((prop) => (
@@ -234,22 +226,22 @@ export default function Header({ onMenuClick }: HeaderProps) {
                       className={`w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors flex items-center gap-2 cursor-pointer
                         ${
                           activeProperty === prop
-                            ? "bg-slate-50 text-slate-900"
-                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                            ? "bg-[#1a1500] text-[#f5c800]"
+                            : "text-[#d1d1d1] hover:bg-[#1a1a1a] hover:text-white"
                         }`}
                     >
                       <Building2
                         className={`w-4 h-4 ${
                           activeProperty === prop
-                            ? "text-emerald-600"
-                            : "text-slate-400"
+                            ? "text-[#f5c800]"
+                            : "text-[#888]"
                         }`}
                       />
                       <span className="truncate">{prop}</span>
                     </button>
                   ))}
-                  <div className="border-t border-slate-100 mt-1 pt-1">
-                    <button className="w-full text-left px-4 py-2.5 text-sm font-bold text-emerald-600 hover:bg-emerald-50 transition-colors cursor-pointer">
+                  <div className="border-t border-[#1e1e1e] mt-1 pt-1">
+                    <button className="w-full text-left px-4 py-2.5 text-sm font-bold text-[#f5c800] hover:bg-[#1a1500] transition-colors cursor-pointer">
                       + Add New Property
                     </button>
                   </div>
@@ -259,8 +251,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
 
           {/* Owner Mode Status Tag */}
-          <div className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-semibold text-emerald-800">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1a1500] border border-[#78620a] text-[11px] font-semibold text-[#f5c800]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#f5c800]" />
             <span>Owner Mode</span>
           </div>
         </div>
@@ -271,9 +263,9 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <button
             onClick={handleLock}
             title="Lock Dashboard"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 rounded-lg transition-default cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#d1d1d1] hover:text-white hover:bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg transition-default cursor-pointer"
           >
-            <Lock className="w-3.5 h-3.5 text-slate-500" />
+            <Lock className="w-3.5 h-3.5 text-[#888]" />
             <span>Lock</span>
           </button>
 
@@ -285,11 +277,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 setBellOpen((o) => !o);
                 if (!bellOpen) buildNotifications();
               }}
-              className="relative min-w-[44px] min-h-[44px] rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center transition-default cursor-pointer"
+              className="relative min-w-[44px] min-h-[44px] rounded-xl text-[#d1d1d1] hover:text-white hover:bg-[#1a1a1a] flex items-center justify-center transition-default cursor-pointer"
             >
-              <Bell className={`w-5 h-5 ${unreadCount > 0 ? "text-slate-900" : ""}`} />
+              <Bell className={`w-5 h-5 ${unreadCount > 0 ? "text-[#f5c800]" : ""}`} />
               {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-white">
+                <span className="absolute top-2 right-2 w-4 h-4 bg-[#f5c800] text-black text-[9px] font-black rounded-full flex items-center justify-center ring-2 ring-[#0a0a0a]">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
@@ -302,16 +294,16 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   className="fixed inset-0 z-10"
                   onClick={() => setBellOpen(false)}
                 />
-                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 overflow-hidden">
+                <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-[#141414] border border-[#2a2a2a] rounded-2xl shadow-xl z-20 overflow-hidden">
                   {/* Header */}
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-[#1e1e1e]">
                     <div className="flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-slate-900" />
-                      <span className="text-sm font-extrabold text-slate-900">
+                      <Bell className="w-4 h-4 text-[#f5c800]" />
+                      <span className="text-sm font-extrabold text-white">
                         Notifications
                       </span>
                       {unreadCount > 0 && (
-                        <span className="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full">
+                        <span className="px-2 py-0.5 bg-[#f5c800] text-black text-[10px] font-black rounded-full">
                           {unreadCount} new
                         </span>
                       )}
@@ -320,14 +312,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllRead}
-                          className="text-[11px] font-bold text-blue-600 hover:text-blue-800 cursor-pointer"
+                          className="text-[11px] font-bold text-[#f5c800] hover:text-white cursor-pointer"
                         >
                           Mark all read
                         </button>
                       )}
                       <button
                         onClick={() => setBellOpen(false)}
-                        className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                        className="p-1 rounded-lg text-[#888] hover:text-white hover:bg-[#1a1a1a] cursor-pointer"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -335,12 +327,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   </div>
 
                   {/* Notification List */}
-                  <div className="max-h-[360px] overflow-y-auto divide-y divide-slate-100">
+                  <div className="max-h-[360px] overflow-y-auto divide-y divide-[#1e1e1e]">
                     {notifications.length === 0 ? (
                       <div className="p-6 text-center">
-                        <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                        <p className="text-sm font-bold text-slate-700">All caught up!</p>
-                        <p className="text-xs text-slate-400 mt-1">No pending alerts.</p>
+                        <CheckCircle2 className="w-8 h-8 text-[#f5c800] mx-auto mb-2" />
+                        <p className="text-sm font-bold text-white">All caught up!</p>
+                        <p className="text-xs text-[#888] mt-1">No pending alerts.</p>
                       </div>
                     ) : (
                       notifications.map((n) => (
@@ -355,18 +347,18 @@ export default function Header({ onMenuClick }: HeaderProps) {
                             );
                             setBellOpen(false);
                           }}
-                          className={`flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition-colors ${
-                            !n.read ? "bg-blue-50/40" : ""
+                          className={`flex items-start gap-3 px-4 py-3 hover:bg-[#1a1a1a] transition-colors ${
+                            !n.read ? "bg-[#1a1500]/40" : ""
                           }`}
                         >
                           {/* Icon */}
                           <div
                             className={`mt-0.5 w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
                               n.type === "maintenance"
-                                ? "bg-amber-100 text-amber-700"
+                                ? "bg-[#1a1500] text-[#f5c800]"
                                 : n.type === "payment"
-                                ? "bg-rose-100 text-rose-700"
-                                : "bg-blue-100 text-blue-700"
+                                ? "bg-[#2d0a0a] text-red-400"
+                                : "bg-[#0c1a3d] text-blue-400"
                             }`}
                           >
                             {n.type === "maintenance" ? (
@@ -381,19 +373,19 @@ export default function Header({ onMenuClick }: HeaderProps) {
                             <div className="flex items-start justify-between gap-1">
                               <p
                                 className={`text-xs font-bold leading-snug ${
-                                  !n.read ? "text-slate-900" : "text-slate-700"
+                                  !n.read ? "text-white" : "text-[#d1d1d1]"
                                 }`}
                               >
                                 {n.title}
                               </p>
                               {!n.read && (
-                                <span className="w-2 h-2 bg-blue-500 rounded-full shrink-0 mt-1" />
+                                <span className="w-2 h-2 bg-[#f5c800] rounded-full shrink-0 mt-1" />
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                            <p className="text-[11px] text-[#888] mt-0.5 leading-relaxed">
                               {n.body}
                             </p>
-                            <span className="text-[10px] text-slate-400 font-semibold mt-1 block">
+                            <span className="text-[10px] text-[#555] font-semibold mt-1 block">
                               {timeAgo(n.time)}
                             </span>
                           </div>
@@ -403,11 +395,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   </div>
 
                   {/* Footer */}
-                  <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/80">
+                  <div className="px-4 py-2.5 border-t border-[#1e1e1e] bg-[#0a0a0a]/80">
                     <Link
                       href="/dashboard/maintenance"
                       onClick={() => setBellOpen(false)}
-                      className="flex items-center justify-between text-xs font-bold text-slate-700 hover:text-slate-900 transition-colors"
+                      className="flex items-center justify-between text-xs font-bold text-[#d1d1d1] hover:text-white transition-colors"
                     >
                       <span>View all maintenance tickets</span>
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -419,13 +411,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </div>
 
           {/* Profile */}
-          <div className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-slate-100 transition-default">
-            <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-              PG
+          <div className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-[#1a1a1a] transition-default">
+            <div className="w-8 h-8 rounded-full bg-[#f5c800] text-black flex items-center justify-center font-bold text-xs shadow-2xs">
+              IH
             </div>
             <div className="hidden sm:block text-left">
-              <p className="text-sm font-bold text-slate-900 leading-none">Property Owner</p>
-              <p className="text-[11px] font-medium text-slate-500 mt-0.5">Admin Access</p>
+              <p className="text-sm font-bold text-white leading-none">Hostel Owner</p>
+              <p className="text-[11px] font-medium text-[#888] mt-0.5">Admin Access</p>
             </div>
           </div>
         </div>

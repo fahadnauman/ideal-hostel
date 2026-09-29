@@ -23,7 +23,7 @@ const navigation = [
   { name: "Floor & Bed Grid", href: "/dashboard/rooms", icon: Layers },
   { name: "Finance & Ledger", href: "/dashboard/finance", icon: IndianRupee },
   { name: "Expense & P&L", href: "/dashboard/expenses", icon: PieChart },
-  { name: "Tenants", href: "/dashboard/tenants", icon: Users },
+  { name: "Guests", href: "/dashboard/tenants", icon: Users },
   { name: "Properties", href: "/dashboard/properties", icon: Building2 },
   { name: "Maintenance", href: "/dashboard/maintenance", icon: Wrench },
   { name: "Meal Logs", href: "/dashboard/meals", icon: UtensilsCrossed },
@@ -53,7 +53,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Backdrop (mobile) */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden"
           onClick={onClose}
         />
       )}
@@ -62,7 +62,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       <aside
         className={`
           fixed top-0 left-0 z-50 h-full w-[260px]
-          bg-white border-r border-slate-200
+          bg-[#0a0a0a] border-r border-[#1e1e1e]
           flex flex-col
           transition-transform duration-200 ease-in-out
           lg:translate-x-0 lg:static lg:z-auto
@@ -70,33 +70,34 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         `}
       >
         {/* ── Logo ─────────────────────────────────────── */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-200">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-[#1e1e1e]">
           <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-[#f5c800] text-black flex items-center justify-center shadow-xs">
               <Building2 className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-base font-bold tracking-tight text-slate-900">
-                PGHQ Standard
+              <span className="text-base font-bold tracking-tight text-white">
+                Ideal Hostel
               </span>
+              <p className="text-[10px] text-[#888] leading-none -mt-0.5">Opificio Round</p>
             </div>
           </Link>
           <button
             onClick={onClose}
             aria-label="Close sidebar"
-            className="lg:hidden p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-default cursor-pointer"
+            className="lg:hidden p-1.5 rounded-lg text-[#888] hover:text-white hover:bg-[#1e1e1e] transition-default cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* ── Owner Mode Callout ───────────────────────── */}
-        <div className="mx-3 my-3 p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+        <div className="mx-3 my-3 p-2.5 rounded-xl bg-[#1a1500] border border-[#78620a]">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="text-xs font-bold text-slate-800">Owner Direct Pass Active</span>
+            <ShieldCheck className="w-4 h-4 text-[#f5c800] shrink-0" />
+            <span className="text-xs font-bold text-[#f5c800]">Owner Direct Pass Active</span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">
+          <p className="text-[11px] text-[#888] mt-1">
             Zero password friction handoff enabled.
           </p>
         </div>
@@ -119,16 +120,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   transition-default group min-h-[44px]
                   ${
                     isActive
-                      ? "bg-slate-900 text-white shadow-2xs"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                      ? "bg-[#f5c800] text-black shadow-2xs"
+                      : "text-[#d1d1d1] hover:text-white hover:bg-[#1a1a1a]"
                   }
                 `}
               >
                 <item.icon
                   className={`w-4 h-4 shrink-0 ${
                     isActive
-                      ? "text-white"
-                      : "text-slate-500 group-hover:text-slate-900"
+                      ? "text-black"
+                      : "text-[#888] group-hover:text-white"
                   }`}
                 />
                 {item.name}
@@ -138,14 +139,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
 
         {/* ── Footer ───────────────────────────────────── */}
-        <div className="p-3 border-t border-slate-200">
+        <div className="p-3 border-t border-[#1e1e1e]">
           <button
             onClick={handleLock}
             className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold
-                       text-slate-700 hover:text-rose-700 hover:bg-rose-50
+                       text-[#d1d1d1] hover:text-red-400 hover:bg-[#2d0a0a]
                        transition-default cursor-pointer min-h-[44px]"
           >
-            <Lock className="w-4 h-4 shrink-0 text-slate-500" />
+            <Lock className="w-4 h-4 shrink-0 text-[#888]" />
             Lock / Exit Bypass
           </button>
         </div>
@@ -153,4 +154,3 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     </>
   );
 }
-

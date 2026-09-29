@@ -11,136 +11,136 @@ import type {
 let _id = 0;
 const id = () => `mock-${++_id}`;
 
-/* ─── Tenants ────────────────────────────────────────────── */
+/* ─── Sample Guests ──────────────────────────────────────── */
 
 const tenants: Record<string, Tenant> = {
-  t1: {
+  g1: {
     id: id(),
     bedId: "",
-    name: "Ravi Kumar",
-    phone: "+91 98765 43210",
-    email: "ravi.kumar@gmail.com",
-    checkInDate: "2025-03-15",
-    leaseEndDate: "2026-03-14",
-    advanceDeposit: 8000,
-    monthlyRent: 6500,
+    name: "Marco Rossi",
+    phone: "+39 347 112 3456",
+    email: "marco.rossi@gmail.com",
+    checkInDate: "2026-09-01",
+    leaseEndDate: "2026-10-01",
+    advanceDeposit: 3000,
+    monthlyRent: 4500,
     rentDueDate: 1,
     paymentStatus: "PAID",
-    emergencyContactName: "Suresh Kumar",
-    emergencyContactRelation: "Father",
-    emergencyContactPhone: "+91 98111 22334",
+    emergencyContactName: "Lucia Rossi",
+    emergencyContactRelation: "Sister",
+    emergencyContactPhone: "+39 347 999 0011",
   },
-  t2: {
+  g2: {
     id: id(),
     bedId: "",
-    name: "Sneha Reddy",
-    phone: "+91 87654 32109",
-    email: "sneha.r@outlook.com",
-    checkInDate: "2025-06-01",
-    leaseEndDate: "2026-05-31",
-    advanceDeposit: 10000,
-    monthlyRent: 7000,
-    rentDueDate: 5,
+    name: "Aiko Tanaka",
+    phone: "+81 90 1234 5678",
+    email: "aiko.t@icloud.com",
+    checkInDate: "2026-08-15",
+    leaseEndDate: "2026-11-15",
+    advanceDeposit: 3000,
+    monthlyRent: 4500,
+    rentDueDate: 15,
     paymentStatus: "PAID",
-    emergencyContactName: "Dr. Sunita Reddy",
-    emergencyContactRelation: "Mother",
-    emergencyContactPhone: "+91 87000 99881",
+    emergencyContactName: "Kenji Tanaka",
+    emergencyContactRelation: "Father",
+    emergencyContactPhone: "+81 90 9999 8888",
   },
-  t3: {
+  g3: {
     id: id(),
     bedId: "",
-    name: "Amit Sharma",
-    phone: "+91 76543 21098",
-    email: null,
-    checkInDate: "2025-01-10",
-    leaseEndDate: "2026-01-09",
-    advanceDeposit: 5000,
-    monthlyRent: 5500,
+    name: "Sofia Kovács",
+    phone: "+36 30 555 7890",
+    email: "sofia.k@outlook.com",
+    checkInDate: "2026-09-10",
+    leaseEndDate: "2026-10-10",
+    advanceDeposit: 3000,
+    monthlyRent: 4500,
     rentDueDate: 10,
     paymentStatus: "OVERDUE",
-    emergencyContactName: "Rajeev Sharma",
-    emergencyContactRelation: "Brother",
-    emergencyContactPhone: "+91 76222 33445",
+    emergencyContactName: "Anna Kovács",
+    emergencyContactRelation: "Mother",
+    emergencyContactPhone: "+36 30 111 2222",
   },
-  t4: {
+  g4: {
     id: id(),
     bedId: "",
-    name: "Priya Nair",
-    phone: "+91 65432 10987",
-    email: "priya.nair@yahoo.com",
-    checkInDate: "2025-08-20",
-    leaseEndDate: "2026-02-19",
-    advanceDeposit: 7000,
-    monthlyRent: 6000,
+    name: "James O'Brien",
+    phone: "+353 87 234 5678",
+    email: "jamesobrien@gmail.com",
+    checkInDate: "2026-09-05",
+    leaseEndDate: "2026-09-30",
+    advanceDeposit: 3000,
+    monthlyRent: 4500,
+    rentDueDate: 5,
+    paymentStatus: "PAID",
+    emergencyContactName: "Mary O'Brien",
+    emergencyContactRelation: "Mother",
+    emergencyContactPhone: "+353 87 999 7777",
+  },
+  g5: {
+    id: id(),
+    bedId: "",
+    name: "Yara Al-Hassan",
+    phone: "+966 50 123 4567",
+    email: "yara.alhassan@yahoo.com",
+    checkInDate: "2026-07-01",
+    leaseEndDate: "2026-12-31",
+    advanceDeposit: 5000,
+    monthlyRent: 7500,
     rentDueDate: 1,
     paymentStatus: "PAID",
-    emergencyContactName: "Mohan Nair",
+    emergencyContactName: "Hassan Al-Hassan",
     emergencyContactRelation: "Father",
-    emergencyContactPhone: "+91 65999 88776",
+    emergencyContactPhone: "+966 50 999 0000",
   },
-  t5: {
+  g6: {
     id: id(),
     bedId: "",
-    name: "Karan Mehta",
-    phone: "+91 54321 09876",
-    email: "karan.m@gmail.com",
-    checkInDate: "2025-04-01",
-    leaseEndDate: "2026-09-30",
-    advanceDeposit: 12000,
+    name: "Lena Müller",
+    phone: "+49 151 2345 6789",
+    email: "lena.mueller@web.de",
+    checkInDate: "2026-08-01",
+    leaseEndDate: "2027-01-31",
+    advanceDeposit: 5000,
     monthlyRent: 7500,
     rentDueDate: 1,
     paymentStatus: "UNPAID",
-    emergencyContactName: "Vinod Mehta",
+    emergencyContactName: "Klaus Müller",
     emergencyContactRelation: "Father",
-    emergencyContactPhone: "+91 54111 44556",
+    emergencyContactPhone: "+49 151 9999 8888",
   },
-  t6: {
+  g7: {
     id: id(),
     bedId: "",
-    name: "Divya Joshi",
-    phone: "+91 43210 98765",
-    email: "divya.j@gmail.com",
-    checkInDate: "2026-01-01",
-    leaseEndDate: "2026-12-31",
-    advanceDeposit: 9000,
-    monthlyRent: 6800,
-    rentDueDate: 1,
-    paymentStatus: "PAID",
-    emergencyContactName: "Anita Joshi",
-    emergencyContactRelation: "Mother",
-    emergencyContactPhone: "+91 43000 11223",
-  },
-  t7: {
-    id: id(),
-    bedId: "",
-    name: "Rohit Verma",
-    phone: "+91 32109 87654",
-    email: null,
-    checkInDate: "2025-11-15",
-    leaseEndDate: "2026-11-14",
-    advanceDeposit: 6000,
-    monthlyRent: 5800,
+    name: "Carlos Vega",
+    phone: "+52 55 1234 5678",
+    email: "carlos.vega@gmail.com",
+    checkInDate: "2026-09-15",
+    leaseEndDate: "2026-10-15",
+    advanceDeposit: 3000,
+    monthlyRent: 4500,
     rentDueDate: 15,
     paymentStatus: "PARTIAL",
-    emergencyContactName: "Kailash Verma",
-    emergencyContactRelation: "Uncle",
-    emergencyContactPhone: "+91 32999 00112",
+    emergencyContactName: "Maria Vega",
+    emergencyContactRelation: "Mother",
+    emergencyContactPhone: "+52 55 9999 0000",
   },
-  t8: {
+  g8: {
     id: id(),
     bedId: "",
-    name: "Ananya Das",
-    phone: "+91 21098 76543",
-    email: "ananya.das@icloud.com",
-    checkInDate: "2025-07-01",
-    leaseEndDate: "2026-06-30",
-    advanceDeposit: 10000,
-    monthlyRent: 7200,
+    name: "Priya Krishnan",
+    phone: "+91 98765 11223",
+    email: "priya.k@icloud.com",
+    checkInDate: "2026-06-01",
+    leaseEndDate: "2026-12-01",
+    advanceDeposit: 4500,
+    monthlyRent: 6000,
     rentDueDate: 1,
     paymentStatus: "PAID",
-    emergencyContactName: "Subhash Das",
+    emergencyContactName: "Suresh Krishnan",
     emergencyContactRelation: "Father",
-    emergencyContactPhone: "+91 21444 77889",
+    emergencyContactPhone: "+91 98765 99001",
   },
 };
 
@@ -163,7 +163,7 @@ function bed(
   return b;
 }
 
-/* ─── Rooms ──────────────────────────────────────────────── */
+/* ─── Room builder ───────────────────────────────────────── */
 
 function room(
   floorId: string,
@@ -185,65 +185,75 @@ function room(
 
 /* ─── Floor Data ─────────────────────────────────────────── */
 
-const PROPERTY_ID = "prop-sunrise-001";
+const PROPERTY_ID = "prop-ideal-hostel-001";
 
 export const mockFloors: Floor[] = [
-  { id: "floor-g", propertyId: PROPERTY_ID, floorNumber: 0, name: "Ground Floor" },
-  { id: "floor-1", propertyId: PROPERTY_ID, floorNumber: 1, name: "First Floor" },
-  { id: "floor-2", propertyId: PROPERTY_ID, floorNumber: 2, name: "Second Floor" },
+  { id: "floor-g", propertyId: PROPERTY_ID, floorNumber: 0, name: "Ground Floor — Dorms" },
+  { id: "floor-1", propertyId: PROPERTY_ID, floorNumber: 1, name: "First Floor — Private" },
+  { id: "floor-2", propertyId: PROPERTY_ID, floorNumber: 2, name: "Second Floor — Doubles" },
 ];
 
 export const mockRoomsByFloor: Record<string, Room[]> = {
+  /* Ground floor: 4 dorm rooms × 6 beds = 24 beds */
   "floor-g": [
-    room("floor-g", "G01", "DOUBLE", [
-      [1, "OCCUPIED", "t1"],
+    room("floor-g", "D01", "QUAD", [
+      [1, "OCCUPIED", "g1"],
+      [2, "OCCUPIED", "g2"],
+      [3, "DUE", "g3"],
+      [4, "OCCUPIED", "g4"],
+      [5, "AVAILABLE"],
+      [6, "AVAILABLE"],
+    ]),
+    room("floor-g", "D02", "QUAD", [
+      [1, "OCCUPIED", "g7"],
       [2, "AVAILABLE"],
-    ]),
-    room("floor-g", "G02", "TRIPLE", [
-      [1, "OCCUPIED", "t2"],
-      [2, "DUE", "t3"],
       [3, "AVAILABLE"],
+      [4, "AVAILABLE"],
+      [5, "AVAILABLE"],
+      [6, "AVAILABLE"],
     ]),
-    room("floor-g", "G03", "DOUBLE", [
-      [1, "ENDING_SOON", "t4"],
-      [2, "OCCUPIED", "t5"],
+    room("floor-g", "D03", "QUAD", [
+      [1, "AVAILABLE"],
+      [2, "AVAILABLE"],
+      [3, "AVAILABLE"],
+      [4, "AVAILABLE"],
+      [5, "AVAILABLE"],
+      [6, "AVAILABLE"],
     ]),
-    room("floor-g", "G04", "SINGLE", [[1, "AVAILABLE"]]),
+    room("floor-g", "D04", "QUAD", [
+      [1, "OCCUPIED", "g8"],
+      [2, "AVAILABLE"],
+      [3, "AVAILABLE"],
+      [4, "AVAILABLE"],
+      [5, "AVAILABLE"],
+      [6, "AVAILABLE"],
+    ]),
   ],
+  /* First floor: 6 private singles = 6 beds */
   "floor-1": [
-    room("floor-1", "101", "TRIPLE", [
-      [1, "OCCUPIED", "t6"],
-      [2, "AVAILABLE"],
-      [3, "DUE", "t7"],
-    ]),
-    room("floor-1", "102", "DOUBLE", [
-      [1, "OCCUPIED", "t8"],
-      [2, "ENDING_SOON", "t4"],
-    ]),
-    room("floor-1", "103", "QUAD", [
-      [1, "AVAILABLE"],
-      [2, "AVAILABLE"],
-      [3, "OCCUPIED", "t1"],
-      [4, "DUE", "t3"],
-    ]),
-    room("floor-1", "104", "DOUBLE", [
-      [1, "AVAILABLE"],
-      [2, "AVAILABLE"],
-    ]),
-    room("floor-1", "105", "SINGLE", [[1, "OCCUPIED", "t2"]]),
+    room("floor-1", "P01", "SINGLE", [[1, "OCCUPIED", "g5"]]),
+    room("floor-1", "P02", "SINGLE", [[1, "OCCUPIED", "g6"]]),
+    room("floor-1", "P03", "SINGLE", [[1, "AVAILABLE"]]),
+    room("floor-1", "P04", "SINGLE", [[1, "AVAILABLE"]]),
+    room("floor-1", "P05", "SINGLE", [[1, "AVAILABLE"]]),
+    room("floor-1", "P06", "SINGLE", [[1, "ENDING_SOON", "g4"]]),
   ],
+  /* Second floor: 4 double rooms = 8 beds */
   "floor-2": [
-    room("floor-2", "201", "DOUBLE", [
-      [1, "OCCUPIED", "t6"],
-      [2, "OCCUPIED", "t8"],
+    room("floor-2", "T01", "DOUBLE", [
+      [1, "OCCUPIED", "g1"],
+      [2, "OCCUPIED", "g2"],
     ]),
-    room("floor-2", "202", "TRIPLE", [
+    room("floor-2", "T02", "DOUBLE", [
       [1, "AVAILABLE"],
-      [2, "ENDING_SOON", "t5"],
-      [3, "AVAILABLE"],
+      [2, "ENDING_SOON", "g3"],
     ]),
-    room("floor-2", "203", "DOUBLE", [
-      [1, "DUE", "t7"],
+    room("floor-2", "T03", "DOUBLE", [
+      [1, "OCCUPIED", "g8"],
+      [2, "AVAILABLE"],
+    ]),
+    room("floor-2", "T04", "DOUBLE", [
+      [1, "AVAILABLE"],
       [2, "AVAILABLE"],
     ]),
   ],
@@ -252,12 +262,12 @@ export const mockRoomsByFloor: Record<string, Room[]> = {
 /* ─── Payment History ────────────────────────────────────── */
 
 export const mockPaymentHistory: PaymentRecord[] = [
-  { id: id(), tenantId: "mock-1", tenantName: "Ravi Kumar", roomNumber: "G01", bedNumber: 1, month: "Sep 2026", amount: 6500, status: "UNPAID", paidOn: null, paymentMode: null },
-  { id: id(), tenantId: "mock-1", tenantName: "Ravi Kumar", roomNumber: "G01", bedNumber: 1, month: "Aug 2026", amount: 6500, status: "PAID", paidOn: "2026-08-02", paymentMode: "UPI" },
-  { id: id(), tenantId: "mock-1", tenantName: "Ravi Kumar", roomNumber: "G01", bedNumber: 1, month: "Jul 2026", amount: 6500, status: "PAID", paidOn: "2026-07-01", paymentMode: "BANK_TRANSFER" },
-  { id: id(), tenantId: "mock-2", tenantName: "Sneha Reddy", roomNumber: "G02", bedNumber: 1, month: "Sep 2026", amount: 7000, status: "PAID", paidOn: "2026-09-04", paymentMode: "CASH" },
-  { id: id(), tenantId: "mock-3", tenantName: "Amit Sharma", roomNumber: "G02", bedNumber: 2, month: "Sep 2026", amount: 5500, status: "OVERDUE", paidOn: null, paymentMode: null },
-  { id: id(), tenantId: "mock-3", tenantName: "Amit Sharma", roomNumber: "G02", bedNumber: 2, month: "Aug 2026", amount: 5500, status: "PARTIAL", paidOn: "2026-08-10", paymentMode: "UPI" },
+  { id: id(), tenantId: "mock-1", tenantName: "Marco Rossi", roomNumber: "D01", bedNumber: 1, month: "Sep 2026", amount: 4500, status: "PAID", paidOn: "2026-09-01", paymentMode: "UPI" },
+  { id: id(), tenantId: "mock-2", tenantName: "Aiko Tanaka", roomNumber: "D01", bedNumber: 2, month: "Sep 2026", amount: 4500, status: "PAID", paidOn: "2026-09-15", paymentMode: "BANK_TRANSFER" },
+  { id: id(), tenantId: "mock-3", tenantName: "Sofia Kovács", roomNumber: "D01", bedNumber: 3, month: "Sep 2026", amount: 4500, status: "OVERDUE", paidOn: null, paymentMode: null },
+  { id: id(), tenantId: "mock-4", tenantName: "James O'Brien", roomNumber: "D01", bedNumber: 4, month: "Sep 2026", amount: 4500, status: "PAID", paidOn: "2026-09-05", paymentMode: "CASH" },
+  { id: id(), tenantId: "mock-5", tenantName: "Yara Al-Hassan", roomNumber: "P01", bedNumber: 1, month: "Sep 2026", amount: 7500, status: "PAID", paidOn: "2026-09-01", paymentMode: "UPI" },
+  { id: id(), tenantId: "mock-6", tenantName: "Lena Müller", roomNumber: "P02", bedNumber: 1, month: "Sep 2026", amount: 7500, status: "UNPAID", paidOn: null, paymentMode: null },
 ];
 
 /* ─── Meal Logs ──────────────────────────────────────────── */
@@ -265,16 +275,13 @@ export const mockPaymentHistory: PaymentRecord[] = [
 const todayStr = new Date().toISOString().split("T")[0];
 
 export const mockMealRecords: import("@/types").MealRecord[] = [
-  { id: id(), date: todayStr, tenantId: "mock-1", tenantName: "Ravi Kumar", roomNumber: "G01", mealType: "BREAKFAST", status: "OPTED_IN" },
-  { id: id(), date: todayStr, tenantId: "mock-1", tenantName: "Ravi Kumar", roomNumber: "G01", mealType: "LUNCH", status: "SKIPPED" },
-  { id: id(), date: todayStr, tenantId: "mock-1", tenantName: "Ravi Kumar", roomNumber: "G01", mealType: "DINNER", status: "OPTED_IN" },
-  { id: id(), date: todayStr, tenantId: "mock-2", tenantName: "Sneha Reddy", roomNumber: "G02", mealType: "BREAKFAST", status: "OPTED_IN" },
-  { id: id(), date: todayStr, tenantId: "mock-2", tenantName: "Sneha Reddy", roomNumber: "G02", mealType: "LUNCH", status: "OPTED_IN" },
-  { id: id(), date: todayStr, tenantId: "mock-2", tenantName: "Sneha Reddy", roomNumber: "G02", mealType: "DINNER", status: "OPTED_IN" },
-  { id: id(), date: todayStr, tenantId: "mock-3", tenantName: "Amit Sharma", roomNumber: "G02", mealType: "BREAKFAST", status: "SKIPPED" },
-  { id: id(), date: todayStr, tenantId: "mock-3", tenantName: "Amit Sharma", roomNumber: "G02", mealType: "LUNCH", status: "OPTED_IN" },
-  { id: id(), date: todayStr, tenantId: "mock-3", tenantName: "Amit Sharma", roomNumber: "G02", mealType: "DINNER", status: "SKIPPED" },
-  { id: id(), date: todayStr, tenantId: "mock-4", tenantName: "Priya Nair", roomNumber: "G03", mealType: "BREAKFAST", status: "OPTED_IN" },
-  { id: id(), date: todayStr, tenantId: "mock-4", tenantName: "Priya Nair", roomNumber: "G03", mealType: "LUNCH", status: "OPTED_IN" },
-  { id: id(), date: todayStr, tenantId: "mock-4", tenantName: "Priya Nair", roomNumber: "G03", mealType: "DINNER", status: "OPTED_IN" },
+  { id: id(), date: todayStr, tenantId: "mock-1", tenantName: "Marco Rossi", roomNumber: "D01", mealType: "BREAKFAST", status: "OPTED_IN" },
+  { id: id(), date: todayStr, tenantId: "mock-1", tenantName: "Marco Rossi", roomNumber: "D01", mealType: "LUNCH", status: "SKIPPED" },
+  { id: id(), date: todayStr, tenantId: "mock-1", tenantName: "Marco Rossi", roomNumber: "D01", mealType: "DINNER", status: "OPTED_IN" },
+  { id: id(), date: todayStr, tenantId: "mock-2", tenantName: "Aiko Tanaka", roomNumber: "D01", mealType: "BREAKFAST", status: "OPTED_IN" },
+  { id: id(), date: todayStr, tenantId: "mock-2", tenantName: "Aiko Tanaka", roomNumber: "D01", mealType: "LUNCH", status: "OPTED_IN" },
+  { id: id(), date: todayStr, tenantId: "mock-2", tenantName: "Aiko Tanaka", roomNumber: "D01", mealType: "DINNER", status: "OPTED_IN" },
+  { id: id(), date: todayStr, tenantId: "mock-5", tenantName: "Yara Al-Hassan", roomNumber: "P01", mealType: "BREAKFAST", status: "OPTED_IN" },
+  { id: id(), date: todayStr, tenantId: "mock-5", tenantName: "Yara Al-Hassan", roomNumber: "P01", mealType: "LUNCH", status: "OPTED_IN" },
+  { id: id(), date: todayStr, tenantId: "mock-5", tenantName: "Yara Al-Hassan", roomNumber: "P01", mealType: "DINNER", status: "SKIPPED" },
 ];

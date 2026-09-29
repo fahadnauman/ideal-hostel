@@ -78,7 +78,7 @@ export interface Tenant {
   status?: "ACTIVE" | "NOTICE" | "VACATED";
 }
 
-export type PaymentMode = "CASH" | "UPI" | "BANK_TRANSFER" | null;
+export type PaymentMode = "CASH" | "UPI" | "BANK_TRANSFER" | "GPAY_UPI" | null;
 
 export interface PaymentRecord {
   id: string;
