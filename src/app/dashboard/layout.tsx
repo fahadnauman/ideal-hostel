@@ -18,14 +18,14 @@ export default function DashboardLayout({
   const mobileNavItems = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "Bed Grid", href: "/dashboard/rooms", icon: Layers },
-    { name: "Guests", href: "/dashboard/tenants", icon: Users },
+    { name: "Tenants", href: "/dashboard/tenants", icon: Users },
   ];
 
   return (
-    <div className="min-h-screen flex bg-[#0a0a0a] text-white">
+    <div className="flex h-screen overflow-hidden text-slate-900 font-sans">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <Header onMenuClick={() => setSidebarOpen(true)} />
 
         <main className="flex-1 p-3.5 sm:p-6 pb-28 lg:pb-8">
@@ -36,7 +36,7 @@ export default function DashboardLayout({
       {/* ── Dedicated Mobile Bottom Navigation Bar ────────── */}
       <nav
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0a0a0a]/95 backdrop-blur-md border-t border-[#1e1e1e] card-shadow px-2 py-1.5 flex items-center justify-around"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 card-shadow px-2 py-1.5 flex items-center justify-around"
       >
         {mobileNavItems.map((item) => {
           const isActive =
@@ -50,13 +50,13 @@ export default function DashboardLayout({
               href={item.href}
               className={`flex flex-col items-center justify-center flex-1 py-1.5 px-1 min-h-[52px] rounded-xl transition-default ${
                 isActive
-                  ? "text-black font-bold bg-[#f5c800]"
-                  : "text-[#888] font-medium hover:text-white"
+                  ? "text-slate-900 font-bold bg-slate-100"
+                  : "text-slate-500 font-medium hover:text-slate-900"
               }`}
             >
               <item.icon
                 className={`w-5 h-5 ${
-                  isActive ? "text-black stroke-[2.5]" : "text-[#888]"
+                  isActive ? "text-slate-900 stroke-[2.5]" : "text-slate-500"
                 }`}
               />
               <span className="text-[11px] mt-1 leading-none">{item.name}</span>
@@ -67,12 +67,13 @@ export default function DashboardLayout({
         {/* More Menu Trigger */}
         <button
           onClick={() => setSidebarOpen(true)}
-          className="flex flex-col items-center justify-center flex-1 py-1.5 px-1 min-h-[52px] rounded-xl text-[#888] hover:text-white font-medium transition-default cursor-pointer"
+          className="flex flex-col items-center justify-center flex-1 py-1.5 px-1 min-h-[52px] rounded-xl text-slate-500 hover:text-slate-900 font-medium transition-default cursor-pointer"
         >
-          <Menu className="w-5 h-5 text-[#888]" />
+          <Menu className="w-5 h-5 text-slate-500" />
           <span className="text-[11px] mt-1 leading-none">More</span>
         </button>
       </nav>
     </div>
   );
 }
+

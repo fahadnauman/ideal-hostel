@@ -22,7 +22,8 @@ import {
   CheckCircle2,
   ClipboardList,
 } from "lucide-react";
-import type { MaintenanceTask } from "@/types";
+import type { MaintenanceTask, Tenant } from "@/types";
+import { mockRoomsByFloor as initialRooms } from "@/data/mock-rooms";
 
 /* ─── Metric Card Data ──────────────────────────────────── */
 
@@ -37,48 +38,7 @@ interface Metric {
   href: string;
 }
 
-const metrics: Metric[] = [
-  {
-    label: "Total Beds",
-    value: "120",
-    change: "+4 this month",
-    trend: "up",
-    icon: BedDouble,
-    iconBg: "bg-blue-50 border border-blue-200",
-    iconColor: "text-blue-700",
-    href: "/dashboard/rooms",
-  },
-  {
-    label: "Occupied Beds",
-    value: "98",
-    change: "81.6% occupancy",
-    trend: "up",
-    icon: UserCheck,
-    iconBg: "bg-emerald-50 border border-emerald-200",
-    iconColor: "text-emerald-700",
-    href: "/dashboard/rooms",
-  },
-  {
-    label: "Vacant Beds",
-    value: "22",
-    change: "3 reserved",
-    trend: "down",
-    icon: DoorOpen,
-    iconBg: "bg-amber-50 border border-amber-200",
-    iconColor: "text-amber-700",
-    href: "/dashboard/rooms",
-  },
-  {
-    label: "Pending Dues",
-    value: "₹47,200",
-    change: "12 tenants",
-    trend: "down",
-    icon: IndianRupee,
-    iconBg: "bg-rose-50 border border-rose-200",
-    iconColor: "text-rose-700",
-    href: "/dashboard/rooms",
-  },
-];
+// Metrics dynamically generated inside component
 
 /* ─── Category Labels ────────────────────────────────────── */
 
@@ -232,9 +192,206 @@ function PendingMaintenanceWidget() {
   );
 }
 
+/* ─── Task Widget ───────────────────────────────────────── */
+
+function TaskWidget() {
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/tasks");
+        if (res.ok) {
+          const data = await res.json();
+          const pending = (data.tasks || []).filter(
+            (t: any) => t.status === "PENDING" || t.status === "IN_PROGRESS"
+          );
+          setTasks(pending.slice(0, 5));
+        }
+      } catch {
+        // silent
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 card-shadow space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center">
+            <ClipboardList className="w-5 h-5 text-purple-700" />
+          </div>
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900">
+              Task Board
+            </h2>
+            <p className="text-xs text-slate-500">Your to-do list</p>
+          </div>
+        </div>
+        <Link
+          href="/dashboard/tasks"
+          className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          View all <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-14 bg-slate-100 rounded-xl animate-pulse" />
+          ))}
+        </div>
+      ) : tasks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-6 text-center">
+          <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" />
+          <p className="text-sm font-bold text-slate-800">All clear!</p>
+          <p className="text-xs text-slate-500 mt-0.5">No pending tasks on your board.</p>
+        </div>
+      ) : (
+        <div className="divide-y divide-slate-100">
+          {tasks.map((t) => (
+            <Link
+              key={t.id}
+              href="/dashboard/tasks"
+              className="flex items-start gap-3 py-3 first:pt-0 last:pb-0 hover:bg-slate-50 -mx-1 px-1 rounded-xl transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-bold text-slate-900 truncate">
+                    {t.title}
+                  </p>
+                  <span
+                    className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      t.priority === "HIGH"
+                        ? "bg-rose-50 text-rose-700 border-rose-200"
+                        : "bg-slate-100 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    {t.priority}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-1">
+                  {t.notes || "No notes"}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Page ──────────────────────────────────────────────── */
 
 export default function DashboardPage() {
+  const [totalBeds, setTotalBeds] = useState(0);
+  const [occupiedBeds, setOccupiedBeds] = useState(0);
+  const [pendingDues, setPendingDues] = useState(0);
+  const [dueTenants, setDueTenants] = useState(0);
+
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const res = await fetch("/api/rooms");
+        if (res.ok) {
+          const data = await res.json();
+          let tb = 0;
+          Object.values(data.rooms).forEach((floor: any) => {
+            floor.forEach((room: any) => {
+              tb += room.beds.length;
+            });
+          });
+          setTotalBeds(tb);
+        }
+      } catch {
+        let tb = 0;
+        Object.values(initialRooms).forEach((floor: any) => {
+          floor.forEach((room: any) => {
+            tb += room.beds.length;
+          });
+        });
+        setTotalBeds(tb);
+      }
+    }
+    fetchRooms();
+
+    async function fetchTenants() {
+      try {
+        const res = await fetch("/api/tenants");
+        if (res.ok) {
+          const data = await res.json();
+          const tenants = data.tenants as Tenant[];
+          const occupied = tenants.length;
+          let dues = 0;
+          let duesC = 0;
+          tenants.forEach(t => {
+            if (t.paymentStatus === "UNPAID" || t.paymentStatus === "OVERDUE" || t.paymentStatus === "PARTIAL") {
+              dues += (t.monthlyRent || 0);
+              duesC++;
+            }
+          });
+          setOccupiedBeds(occupied);
+          setPendingDues(dues);
+          setDueTenants(duesC);
+        }
+      } catch {
+        // silent
+      }
+    }
+    fetchTenants();
+  }, []);
+
+  const vacantBeds = totalBeds - occupiedBeds;
+  const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
+
+  const dynamicMetrics: Metric[] = [
+    {
+      label: "Total Beds",
+      value: totalBeds.toString(),
+      change: "Active architecture",
+      trend: "neutral",
+      icon: BedDouble,
+      iconBg: "bg-blue-50 border border-blue-200",
+      iconColor: "text-blue-700",
+      href: "/dashboard/rooms",
+    },
+    {
+      label: "Occupied Beds",
+      value: occupiedBeds.toString(),
+      change: `${occupancyRate}% occupancy`,
+      trend: "up",
+      icon: UserCheck,
+      iconBg: "bg-emerald-50 border border-emerald-200",
+      iconColor: "text-emerald-700",
+      href: "/dashboard/rooms",
+    },
+    {
+      label: "Vacant Beds",
+      value: vacantBeds.toString(),
+      change: "Available to book",
+      trend: "neutral",
+      icon: DoorOpen,
+      iconBg: "bg-amber-50 border border-amber-200",
+      iconColor: "text-amber-700",
+      href: "/dashboard/rooms",
+    },
+    {
+      label: "Pending Dues",
+      value: `₹${pendingDues.toLocaleString("en-IN")}`,
+      change: `${dueTenants} tenants`,
+      trend: "down",
+      icon: IndianRupee,
+      iconBg: "bg-rose-50 border border-rose-200",
+      iconColor: "text-rose-700",
+      href: "/dashboard/rooms",
+    },
+  ];
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* ── Welcome / Client Handoff Banner ─────────────────── */}
@@ -245,7 +402,7 @@ export default function DashboardPage() {
             <span>Owner Handoff Active</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Sunrise PG Hostel
+            Ideal Hostel
           </h1>
           <p className="text-sm text-slate-600">
             Live occupancy, room grid, dues collection, and property overview.
@@ -265,12 +422,12 @@ export default function DashboardPage() {
 
       {/* ── Metric Cards ─────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {metrics.map((metric) => (
+        {dynamicMetrics.map((metric) => (
           <Link
             key={metric.label}
             href={metric.href}
             className="group relative bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5
-                       card-shadow card-shadow-hover transition-all duration-200 ease-in-out block"
+                       card-shadow-3d card-shadow-hover transition-all duration-200 ease-in-out block"
           >
             {/* Top row */}
             <div className="flex items-start justify-between mb-3 sm:mb-4">
@@ -350,8 +507,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Three-Column Bottom Section ──────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* ── Four-Column Bottom Section ──────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         {/* Quick Actions */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 card-shadow space-y-4">
           <div className="flex items-center justify-between">
@@ -424,54 +581,16 @@ export default function DashboardPage() {
           </div>
 
           <div className="divide-y divide-slate-100">
-            {[
-              {
-                text: "Ravi Kumar checked in (Room G01, Bed 1)",
-                time: "2 hours ago",
-                badge: "Check-in",
-                badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
-              },
-              {
-                text: "Rent collected ₹6,500 from Sneha Reddy",
-                time: "5 hours ago",
-                badge: "Payment",
-                badgeColor: "bg-blue-50 text-blue-800 border-blue-200",
-              },
-              {
-                text: "Plumbing repair resolved in Room 101",
-                time: "Yesterday",
-                badge: "Resolved",
-                badgeColor: "bg-slate-100 text-slate-800 border-slate-200",
-              },
-              {
-                text: "Rent reminder sent to Amit Sharma (₹5,500 due)",
-                time: "2 days ago",
-                badge: "Due Alert",
-                badgeColor: "bg-rose-50 text-rose-800 border-rose-200",
-              },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="py-3 flex items-start justify-between gap-3 first:pt-0 last:pb-0"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${item.badgeColor}`}
-                    >
-                      {item.badge}
-                    </span>
-                    <span className="text-xs text-slate-400 sm:hidden">{item.time}</span>
-                  </div>
-                  <p className="text-sm font-medium text-slate-800">{item.text}</p>
-                </div>
-                <span className="text-xs font-medium text-slate-400 whitespace-nowrap hidden sm:inline-block">
-                  {item.time}
-                </span>
-              </div>
-            ))}
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-2" />
+              <p className="text-sm font-bold text-slate-800">All caught up!</p>
+              <p className="text-xs text-slate-500 mt-0.5">No recent activity.</p>
+            </div>
           </div>
         </div>
+
+        {/* Task Widget */}
+        <TaskWidget />
       </div>
     </div>
   );

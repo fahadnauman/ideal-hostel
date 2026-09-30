@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { mockRoomsByFloor } from "@/data/mock-rooms";
 import {
   getAllTenants,
   getTenantById,
   updateTenant,
+  addTenant,
   getTenantPaymentHistory,
   addPaymentRecord,
   createPaymentSubmission,
@@ -124,6 +126,253 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { action } = body;
+
+    // Bulk import tenants
+    if (action === "bulk_import") {
+      const { tenants } = body; // Array of tenant objects
+      if (!Array.isArray(tenants)) {
+        return NextResponse.json({ success: false, error: "Invalid payload, expected array of tenants" }, { status: 400 });
+      }
+
+      const importedTenants = [];
+      let successCount = 0;
+
+      for (const tData of tenants) {
+        const { 
+          name, phone, roomNumber, bedId, monthlyRent, advanceDeposit, checkInDate,
+          dateOfBirth, whatsappNumber, permanentAddress, courseName, branch, yearOfStudy,
+          parentName, parentOccupation, parentPhone, paymentMethod 
+        } = tData;
+
+        let targetBedId = bedId;
+
+        // If no bedId is provided, try to find an available bed in the specified roomNumber
+        if (!targetBedId && roomNumber) {
+          for (const floorRooms of Object.values(mockRoomsByFloor)) {
+            const room = floorRooms.find(r => r.roomNumber.toUpperCase() === roomNumber.toUpperCase());
+            if (room) {
+              const availableBed = room.beds.find(b => b.status === "AVAILABLE");
+              if (availableBed) {
+                targetBedId = availableBed.id;
+              }
+            }
+            if (targetBedId) break;
+          }
+        }
+
+        // If still no bedId, find ANY available bed
+        if (!targetBedId) {
+          for (const floorRooms of Object.values(mockRoomsByFloor)) {
+            for (const room of floorRooms) {
+              const availableBed = room.beds.find(b => b.status === "AVAILABLE");
+              if (availableBed) {
+                targetBedId = availableBed.id;
+                break;
+              }
+            }
+            if (targetBedId) break;
+          }
+        }
+
+        if (!targetBedId) continue; // Skip if hostel is completely full
+
+        const tenant = addTenant({
+          name: name || "Unknown",
+          phone: phone || "",
+          roomNumber: roomNumber || "",
+          bedId: targetBedId,
+          monthlyRent: Number(monthlyRent) || 0,
+          advanceDeposit: Number(advanceDeposit) || 0,
+          checkInDate: checkInDate || new Date().toISOString().split("T")[0],
+          dateOfBirth: dateOfBirth || "",
+          whatsappNumber: whatsappNumber || "",
+          permanentAddress: permanentAddress || "",
+          courseName: courseName || "",
+          branch: branch || "",
+          yearOfStudy: yearOfStudy || "",
+          parentName: parentName || "",
+          parentOccupation: parentOccupation || "",
+          parentPhone: parentPhone || "",
+          paymentMethod: paymentMethod || "UPI",
+          paymentStatus: "PAID",
+          status: "ACTIVE",
+          rentDueDate: 5,
+          email: null,
+          leaseEndDate: null,
+          emergencyContactName: parentName || "",
+          emergencyContactPhone: parentPhone || "",
+          emergencyContactRelation: parentName ? "Parent" : "",
+        });
+
+        importedTenants.push(tenant);
+
+        // Map the tenant to the global bed state
+        for (const [floorKey, floorRooms] of Object.entries(mockRoomsByFloor)) {
+          if (floorRooms.some(r => r.beds.some(b => b.id === targetBedId))) {
+            mockRoomsByFloor[floorKey] = floorRooms.map(room => {
+              if (room.beds.some(b => b.id === targetBedId)) {
+                return {
+                  ...room,
+                  beds: room.beds.map(b => 
+                    b.id === targetBedId 
+                      ? { ...b, tenant, status: "OCCUPIED" } 
+                      : b
+                  )
+                };
+              }
+              return room;
+            });
+            break;
+          }
+        }
+        successCount++;
+      }
+
+      return NextResponse.json({ success: true, count: successCount, tenants: importedTenants });
+    }
+
+    // Add a new tenant
+    if (action === "add_tenant") {
+      const { 
+        name, phone, roomNumber, bedId, monthlyRent, advanceDeposit, checkInDate,
+        dateOfBirth, whatsappNumber, permanentAddress, courseName, branch, yearOfStudy,
+        parentName, parentOccupation, parentPhone, paymentMethod 
+      } = body;
+      const tenant = addTenant({
+        name,
+        phone,
+        roomNumber,
+        bedId,
+        monthlyRent: Number(monthlyRent),
+        advanceDeposit: Number(advanceDeposit),
+        checkInDate,
+        dateOfBirth,
+        whatsappNumber,
+        permanentAddress,
+        courseName,
+        branch,
+        yearOfStudy,
+        parentName,
+        parentOccupation,
+        parentPhone,
+        paymentMethod,
+        paymentStatus: "PAID",
+        status: "ACTIVE",
+        rentDueDate: 5,
+        email: null,
+        leaseEndDate: null,
+        emergencyContactName: parentName || "",
+        emergencyContactPhone: parentPhone || "",
+        emergencyContactRelation: parentName ? "Parent" : "",
+      });
+
+      // Map the tenant to the global bed state so it persists in the UI
+      // Use map to ensure we don't accidentally overwrite or mutate the whole array incorrectly
+      for (const [floorKey, floorRooms] of Object.entries(mockRoomsByFloor)) {
+        if (floorRooms.some(r => r.beds.some(b => b.id === bedId))) {
+          mockRoomsByFloor[floorKey] = floorRooms.map(room => {
+            if (room.beds.some(b => b.id === bedId)) {
+              return {
+                ...room,
+                beds: room.beds.map(b => 
+                  b.id === bedId 
+                    ? { ...b, tenant, status: "OCCUPIED" } 
+                    : b
+                )
+              };
+            }
+            return room;
+          });
+          break;
+        }
+      }
+
+      return NextResponse.json({ success: true, tenant });
+    }
+
+    // Update an existing tenant
+    if (action === "update_tenant") {
+      const { 
+        tenantId, bedId,
+        name, phone, monthlyRent, advanceDeposit, checkInDate,
+        dateOfBirth, whatsappNumber, permanentAddress, courseName, branch, yearOfStudy,
+        parentName, parentOccupation, parentPhone, paymentMethod 
+      } = body;
+
+      const tenant = updateTenant(tenantId, {
+        name,
+        phone,
+        monthlyRent: Number(monthlyRent),
+        advanceDeposit: Number(advanceDeposit),
+        checkInDate,
+        dateOfBirth,
+        whatsappNumber,
+        permanentAddress,
+        courseName,
+        branch,
+        yearOfStudy,
+        parentName,
+        parentOccupation,
+        parentPhone,
+        paymentMethod,
+        emergencyContactName: parentName || "",
+        emergencyContactPhone: parentPhone || "",
+        emergencyContactRelation: parentName ? "Parent" : "",
+      });
+
+      if (!tenant) return NextResponse.json({ success: false, error: "Tenant not found" }, { status: 404 });
+
+      // Map the tenant to the global bed state so it persists in the UI
+      for (const [floorKey, floorRooms] of Object.entries(mockRoomsByFloor)) {
+        if (floorRooms.some(r => r.beds.some(b => b.id === bedId))) {
+          mockRoomsByFloor[floorKey] = floorRooms.map(room => {
+            if (room.beds.some(b => b.id === bedId)) {
+              return {
+                ...room,
+                beds: room.beds.map(b => 
+                  b.id === bedId 
+                    ? { ...b, tenant } 
+                    : b
+                )
+              };
+            }
+            return room;
+          });
+          break;
+        }
+      }
+
+      return NextResponse.json({ success: true, tenant });
+    }
+
+    // Terminate a tenant
+    if (action === "terminate_tenant") {
+      const { tenantId, bedId } = body;
+      const tenant = updateTenant(tenantId, { status: "VACATED" });
+
+      if (!tenant) return NextResponse.json({ success: false, error: "Tenant not found" }, { status: 404 });
+
+      // Unlink the tenant from the bed
+      for (const [floorKey, floorRooms] of Object.entries(mockRoomsByFloor)) {
+        if (floorRooms.some(r => r.beds.some(b => b.id === bedId))) {
+          mockRoomsByFloor[floorKey] = floorRooms.map(room => {
+            if (room.beds.some(b => b.id === bedId)) {
+              return {
+                ...room,
+                beds: room.beds.map(b => 
+                  b.id === bedId 
+                    ? { ...b, tenant: null, status: "AVAILABLE" } 
+                    : b
+                )
+              };
+            }
+            return room;
+          });
+          break;
+        }
+      }
+      return NextResponse.json({ success: true });
+    }
 
     // Record verified payment
     if (action === "record_payment") {

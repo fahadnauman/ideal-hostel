@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { Bed, Room } from "@/types";
 import { mockFloors, mockRoomsByFloor, mockPaymentHistory } from "@/data/mock-rooms";
 import FloorSelector from "@/components/rooms/floor-selector";
@@ -9,15 +9,35 @@ import StatusLegend from "@/components/rooms/status-legend";
 import TenantSheet from "@/components/rooms/tenant-sheet";
 import BedIndicator from "@/components/rooms/bed-indicator";
 import RoomQrModal from "@/components/rooms/room-qr-modal";
-import { Layers, LayoutGrid, Grid2X2, QrCode } from "lucide-react";
+import EditRoomModal from "@/components/rooms/edit-room-modal";
+import { Layers, LayoutGrid, Grid2X2, QrCode, Settings2 } from "lucide-react";
 
 export default function RoomsPage() {
   const [activeFloorId, setActiveFloorId] = useState(mockFloors[0].id);
   const [selectedBed, setSelectedBed] = useState<Bed | null>(null);
   const [selectedQrRoom, setSelectedQrRoom] = useState<Room | null>(null);
+  const [selectedEditRoom, setSelectedEditRoom] = useState<Room | null>(null);
   const [viewMode, setViewMode] = useState<"cards" | "matrix">("cards");
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const rooms = mockRoomsByFloor[activeFloorId] ?? [];
+  const [fetchedRooms, setFetchedRooms] = useState<Record<string, Room[]>>(mockRoomsByFloor);
+
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const res = await fetch("/api/rooms");
+        if (res.ok) {
+          const data = await res.json();
+          setFetchedRooms(data.rooms);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchRooms();
+  }, [refreshKey]);
+
+  const rooms = fetchedRooms[activeFloorId] ?? [];
   const activeFloor = mockFloors.find((f) => f.id === activeFloorId);
 
   const handleBedClick = useCallback((bed: Bed) => {
@@ -141,6 +161,7 @@ export default function RoomsPage() {
               room={room}
               onBedClick={handleBedClick}
               onQrClick={setSelectedQrRoom}
+              onEditClick={setSelectedEditRoom}
             />
           ))}
         </div>
@@ -177,6 +198,14 @@ export default function RoomsPage() {
                       <QrCode className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">QR Placard</span>
                     </button>
+                    <button
+                      onClick={() => setSelectedEditRoom(room)}
+                      title={`Edit Room ${room.roomNumber}`}
+                      className="p-1 rounded-md bg-white border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-default cursor-pointer text-xs flex items-center gap-1 font-semibold"
+                    >
+                      <Settings2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Edit</span>
+                    </button>
                   </div>
                   <span className="text-xs font-semibold text-slate-500">
                     {room.beds.length} beds
@@ -211,14 +240,32 @@ export default function RoomsPage() {
         bed={selectedBed}
         paymentHistory={mockPaymentHistory}
         onClose={handleCloseSheet}
+        onUpdate={(updatedTenant?: any) => {
+          setRefreshKey(k => k + 1);
+          if (updatedTenant) {
+            setSelectedBed(prev => prev ? { ...prev, tenant: updatedTenant, status: "OCCUPIED" } : null);
+          } else {
+            handleCloseSheet();
+          }
+        }}
       />
 
       {/* ── Room QR Code Placard Modal ─────────────────── */}
       <RoomQrModal
         room={selectedQrRoom}
-        propertyTitle="Sunrise PG Hostel"
+        propertyTitle="Ideal Hostel"
         isOpen={!!selectedQrRoom}
         onClose={() => setSelectedQrRoom(null)}
+      />
+
+      <EditRoomModal
+        room={selectedEditRoom}
+        isOpen={!!selectedEditRoom}
+        onClose={() => setSelectedEditRoom(null)}
+        onUpdate={(updatedRoom) => {
+          setSelectedEditRoom(updatedRoom);
+          setRefreshKey(k => k + 1);
+        }}
       />
     </div>
   );

@@ -72,13 +72,23 @@ export interface Tenant {
   emergencyContactName?: string | null;
   emergencyContactPhone?: string | null;
   emergencyContactRelation?: string | null;
+  dateOfBirth?: string | null;
+  whatsappNumber?: string | null;
+  permanentAddress?: string | null;
+  courseName?: string | null;
+  branch?: string | null;
+  yearOfStudy?: string | null;
+  parentName?: string | null;
+  parentOccupation?: string | null;
+  parentPhone?: string | null;
+  paymentMethod?: "CASH" | "UPI" | null;
   roomNumber?: string;
   bedNumber?: number;
   floorName?: string;
   status?: "ACTIVE" | "NOTICE" | "VACATED";
 }
 
-export type PaymentMode = "CASH" | "UPI" | "BANK_TRANSFER" | "GPAY_UPI" | null;
+export type PaymentMode = "CASH" | "UPI" | "BANK_TRANSFER" | null;
 
 export interface PaymentRecord {
   id: string;

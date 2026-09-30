@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import type { Bed, PaymentRecord } from "@/types";
 import { getStatusConfig } from "./status-legend";
 import {
@@ -20,13 +20,25 @@ import {
   Coffee,
   Sun,
   Moon,
+  Printer,
+  Trash2,
+  Edit,
+  AlertTriangle,
+  ChevronRight,
+  BookOpen,
+  MapPin,
+  CreditCard,
+  GraduationCap
 } from "lucide-react";
 import RecordPaymentModal from "@/components/finance/record-payment-modal";
+import { Room } from "@/types";
+import { mockRoomsByFloor } from "@/data/mock-rooms";
 
 interface TenantSheetProps {
   bed: Bed | null;
   paymentHistory: PaymentRecord[];
   onClose: () => void;
+  onUpdate?: (updatedTenant?: any) => void;
 }
 
 const paymentStatusConfig: Record<
@@ -63,9 +75,160 @@ export default function TenantSheet({
   bed,
   paymentHistory,
   onClose,
+  onUpdate,
 }: TenantSheetProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isAddingTenant, setIsAddingTenant] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    dateOfBirth: "",
+    whatsappNumber: "",
+    permanentAddress: "",
+    courseName: "",
+    branch: "",
+    yearOfStudy: "",
+    parentName: "",
+    parentOccupation: "",
+    parentPhone: "",
+    paymentMethod: "UPI" as "CASH" | "UPI",
+    monthlyRent: "",
+    advanceDeposit: "",
+    checkInDate: new Date().toISOString().split("T")[0],
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  // Derive room info
+  const room = useMemo(() => {
+    if (!bed) return null;
+    for (const floor of Object.values(mockRoomsByFloor)) {
+      const found = floor.find(r => r.beds.some(b => b.id === bed.id));
+      if (found) return found;
+    }
+    return null;
+  }, [bed]);
+
+  // Reset form data on open or bed change
+  useEffect(() => {
+    if (bed) {
+      setIsAddingTenant(false);
+      if (bed.tenant) {
+        setFormData({
+          name: bed.tenant.name || "",
+          phone: bed.tenant.phone || "",
+          dateOfBirth: bed.tenant.dateOfBirth || "",
+          whatsappNumber: bed.tenant.whatsappNumber || "",
+          permanentAddress: bed.tenant.permanentAddress || "",
+          courseName: bed.tenant.courseName || "",
+          branch: bed.tenant.branch || "",
+          yearOfStudy: bed.tenant.yearOfStudy || "",
+          parentName: bed.tenant.parentName || bed.tenant.emergencyContactName || "",
+          parentOccupation: bed.tenant.parentOccupation || "",
+          parentPhone: bed.tenant.parentPhone || bed.tenant.emergencyContactPhone || "",
+          paymentMethod: bed.tenant.paymentMethod || "UPI",
+          monthlyRent: bed.tenant.monthlyRent?.toString() || (room?.roomType === "TRIPLE" ? "4000" : "4500"),
+          advanceDeposit: bed.tenant.advanceDeposit?.toString() || (room?.roomType === "TRIPLE" ? "4000" : "4500"),
+          checkInDate: bed.tenant.checkInDate || new Date().toISOString().split("T")[0],
+        });
+      } else {
+        setFormData({
+          name: "",
+          phone: "",
+          dateOfBirth: "",
+          whatsappNumber: "",
+          permanentAddress: "",
+          courseName: "",
+          branch: "",
+          yearOfStudy: "",
+          parentName: "",
+          parentOccupation: "",
+          parentPhone: "",
+          paymentMethod: "UPI",
+          monthlyRent: room?.roomType === "TRIPLE" ? "4000" : "4500",
+          advanceDeposit: room?.roomType === "TRIPLE" ? "4000" : "4500",
+          checkInDate: new Date().toISOString().split("T")[0],
+        });
+      }
+    }
+  }, [bed, room?.roomType]);
+
+  const handleAddTenant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bed || !room) return;
+    setLoading(true);
+    try {
+      const isEditing = !!bed.tenant;
+      const res = await fetch("/api/tenants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: isEditing ? "update_tenant" : "add_tenant",
+          tenantId: bed.tenant?.id,
+          name: formData.name,
+          phone: formData.phone,
+          roomNumber: room.roomNumber,
+          bedId: bed.id,
+          monthlyRent: formData.monthlyRent,
+          advanceDeposit: formData.advanceDeposit,
+          checkInDate: formData.checkInDate,
+          dateOfBirth: formData.dateOfBirth,
+          whatsappNumber: formData.whatsappNumber,
+          permanentAddress: formData.permanentAddress,
+          courseName: formData.courseName,
+          branch: formData.branch,
+          yearOfStudy: formData.yearOfStudy,
+          parentName: formData.parentName,
+          parentOccupation: formData.parentOccupation,
+          parentPhone: formData.parentPhone,
+          paymentMethod: formData.paymentMethod,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (onUpdate) onUpdate(data.tenant);
+        else window.location.reload();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        console.error("API Error:", errData);
+        alert(isEditing ? `Failed to update tenant: ${errData.error || "Unknown error"}` : `Failed to add tenant: ${errData.error || "Unknown error"}`);
+      }
+    } catch (error) {
+      console.error("Error saving tenant:", error);
+      alert("Error saving tenant");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTerminateTenant = async () => {
+    if (!bed || !tenant) return;
+    if (!window.confirm("Are you sure you want to terminate this tenant's stay and vacate the bed?")) return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/tenants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "terminate_tenant",
+          tenantId: tenant.id,
+          bedId: bed.id,
+        }),
+      });
+      if (res.ok) {
+        if (onUpdate) onUpdate();
+        else window.location.reload();
+      } else {
+        alert("Failed to terminate tenant");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error terminating tenant");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Close on Escape
   useEffect(() => {
@@ -139,7 +302,10 @@ export default function TenantSheet({
             </div>
 
             <button
-              onClick={onClose}
+              onClick={() => {
+                if (isAddingTenant) setIsAddingTenant(false);
+                else onClose();
+              }}
               aria-label="Close details"
               className="p-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-default cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
@@ -150,7 +316,102 @@ export default function TenantSheet({
 
         {/* ── Content ──────────────────────────────────── */}
         <div className="px-5 sm:px-6 py-5 space-y-6 pb-20 sm:pb-8">
-          {tenant ? (
+          {isAddingTenant ? (
+            <form onSubmit={handleAddTenant} className="space-y-4">
+              <div className="space-y-4">
+                <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2">Personal Details</h3>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Full Name</label>
+                    <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="Enter name" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Date of Birth</label>
+                    <input type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" />
+                  </div>
+                </div>
+                
+                <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 pt-2">Contact Info</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Phone Number</label>
+                    <input required type="tel" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="e.g. 9037953712 or +91..." />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">WhatsApp Number</label>
+                    <input type="tel" value={formData.whatsappNumber} onChange={e => setFormData({...formData, whatsappNumber: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="e.g. 9037953712 or +91..." />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Permanent Address</label>
+                    <textarea rows={2} value={formData.permanentAddress} onChange={e => setFormData({...formData, permanentAddress: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="Full permanent address" />
+                  </div>
+                </div>
+
+                <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 pt-2">Academic Details (CET)</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Course Name</label>
+                    <input type="text" value={formData.courseName} onChange={e => setFormData({...formData, courseName: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="e.g. B.Tech, B.Sc" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Branch</label>
+                    <input type="text" value={formData.branch} onChange={e => setFormData({...formData, branch: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="e.g. Computer Science" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Year of Study</label>
+                    <input type="text" value={formData.yearOfStudy} onChange={e => setFormData({...formData, yearOfStudy: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="e.g. 1st Year" />
+                  </div>
+                </div>
+
+                <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 pt-2">Guardian / Parents Details</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Parent/Guardian Name</label>
+                    <input type="text" value={formData.parentName} onChange={e => setFormData({...formData, parentName: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="Parent name" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Parent Phone</label>
+                    <input type="tel" value={formData.parentPhone} onChange={e => setFormData({...formData, parentPhone: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="e.g. 9037953712 or +91..." />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Occupation (Optional)</label>
+                    <input type="text" value={formData.parentOccupation} onChange={e => setFormData({...formData, parentOccupation: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" placeholder="Occupation" />
+                  </div>
+                </div>
+
+                <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2 pt-2">Financials & Admission</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Check-in Date</label>
+                    <input required type="date" value={formData.checkInDate} onChange={e => setFormData({...formData, checkInDate: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Payment Method</label>
+                    <select required value={formData.paymentMethod} onChange={e => setFormData({...formData, paymentMethod: e.target.value as "CASH" | "UPI"})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none">
+                      <option value="CASH">Cash</option>
+                      <option value="UPI">GPay / UPI</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Monthly Rent</label>
+                    <input required type="number" value={formData.monthlyRent} onChange={e => setFormData({...formData, monthlyRent: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-slate-600 block mb-1">Security Deposit</label>
+                    <input required type="number" value={formData.advanceDeposit} onChange={e => setFormData({...formData, advanceDeposit: e.target.value})} className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-slate-900 focus:outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button type="button" onClick={() => setIsAddingTenant(false)} className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-default">Cancel</button>
+                <button type="submit" disabled={loading} className="px-5 py-2 text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-default disabled:opacity-50">
+                  {loading ? "Saving..." : (bed.tenant ? "Save Details" : "Confirm & Assign Bed")}
+                </button>
+              </div>
+            </form>
+          ) : tenant ? (
             <>
               {/* Tenant Profile Card */}
               <section className="space-y-4">
@@ -203,7 +464,7 @@ export default function TenantSheet({
                     <span>Call</span>
                   </a>
                   <a
-                    href={`https://wa.me/${tenant.phone.replace(/[^0-9]/g, "")}?text=Hi%20${encodeURIComponent(tenant.name)},%20this%20is%20from%20PGHQ%20regarding%20your%20room%20rent.`}
+                    href={`https://wa.me/${(tenant.whatsappNumber || tenant.phone).replace(/[^0-9]/g, "").length === 10 ? "91" + (tenant.whatsappNumber || tenant.phone).replace(/[^0-9]/g, "") : (tenant.whatsappNumber || tenant.phone).replace(/[^0-9]/g, "")}?text=Hi%20${encodeURIComponent(tenant.name)},%20this%20is%20from%20PGHQ.`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-bold text-xs transition-default shadow-xs cursor-pointer min-h-[56px]"
@@ -211,6 +472,24 @@ export default function TenantSheet({
                     <MessageCircle className="w-4 h-4" />
                     <span>WhatsApp</span>
                   </a>
+                </div>
+
+                {/* Edit and Terminate Buttons */}
+                <div className="grid grid-cols-2 gap-2.5 mt-3">
+                  <button
+                    onClick={() => setIsAddingTenant(true)}
+                    className="flex items-center justify-center gap-2 py-3 bg-slate-100 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-200 transition-default shadow-xs"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit Profile
+                  </button>
+                  <button
+                    onClick={handleTerminateTenant}
+                    className="flex items-center justify-center gap-2 py-3 bg-rose-50 text-rose-700 font-bold text-sm rounded-xl hover:bg-rose-100 transition-default shadow-xs border border-rose-200"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Terminate Tenant
+                  </button>
                 </div>
               </section>
 
@@ -242,6 +521,11 @@ export default function TenantSheet({
                     value={`${ordinal(tenant.rentDueDate)} of month`}
                   />
                   <DetailCard
+                    icon={CreditCard}
+                    label="Payment Method"
+                    value={tenant.paymentMethod === "UPI" ? "GPay / UPI" : tenant.paymentMethod === "CASH" ? "Cash" : "Not Set"}
+                  />
+                  <DetailCard
                     icon={CalendarClock}
                     label="Lease Expiration"
                     value={
@@ -249,15 +533,41 @@ export default function TenantSheet({
                         ? formatDate(tenant.leaseEndDate)
                         : "Open Agreement"
                     }
-                    className="col-span-2"
                   />
                 </div>
               </section>
 
-              {/* Emergency Contact */}
+              {/* Academic & Contact Details */}
+              {(tenant.courseName || tenant.permanentAddress) && (
+                <section className="space-y-3">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Extended Profile
+                  </h3>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {tenant.courseName && (
+                      <DetailCard
+                        icon={GraduationCap}
+                        label="Course Details"
+                        value={`${tenant.courseName}${tenant.branch ? ` - ${tenant.branch}` : ""}${tenant.yearOfStudy ? ` (${tenant.yearOfStudy})` : ""}`}
+                        className="col-span-2"
+                      />
+                    )}
+                    {tenant.permanentAddress && (
+                      <DetailCard
+                        icon={MapPin}
+                        label="Permanent Address"
+                        value={tenant.permanentAddress}
+                        className="col-span-2"
+                      />
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* Emergency Contact & Guardians */}
               <section className="space-y-3">
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Emergency Contact
+                  Emergency Contact / Guardian
                 </h3>
                 {tenant.emergencyContactName ? (
                   <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
@@ -287,18 +597,6 @@ export default function TenantSheet({
                     No emergency contact on file.
                   </div>
                 )}
-              </section>
-
-              {/* Meal Preferences */}
-              <section className="space-y-3">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Today&apos;s Meal Preferences
-                </h3>
-                <div className="grid grid-cols-3 gap-2.5">
-                  <MealToggle type="BREAKFAST" icon={Coffee} />
-                  <MealToggle type="LUNCH" icon={Sun} />
-                  <MealToggle type="DINNER" icon={Moon} />
-                </div>
               </section>
 
               {/* Payment History */}
@@ -348,6 +646,18 @@ export default function TenantSheet({
                   </table>
                 </div>
               </section>
+
+              {/* Print Application */}
+              <div className="pt-4 mt-6 border-t border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => window.open(`/print-application/${tenant.id}`, '_blank')}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-900 text-white font-bold text-sm rounded-xl hover:bg-slate-800 transition-default shadow-xs"
+                >
+                  <Printer className="w-4 h-4" />
+                  Print Application PDF
+                </button>
+              </div>
             </>
           ) : (
             /* Vacant Bed Actions */
@@ -363,6 +673,7 @@ export default function TenantSheet({
               </div>
               <button
                 type="button"
+                onClick={() => setIsAddingTenant(true)}
                 className="w-full max-w-xs py-3 px-5 bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white font-bold text-sm
                            rounded-xl transition-default cursor-pointer min-h-[48px] shadow-sm"
               >
@@ -442,22 +753,4 @@ function ordinal(n: number): string {
   const s = ["th", "st", "nd", "rd"];
   const v = n % 100;
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
-
-function MealToggle({ type, icon: Icon }: { type: string, icon: React.ElementType }) {
-  const [optedIn, setOptedIn] = useState(true);
-  
-  return (
-    <button
-      onClick={() => setOptedIn(!optedIn)}
-      className={`flex flex-col items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl border text-xs font-bold transition-all shadow-xs min-h-[56px]
-        ${optedIn 
-          ? "bg-slate-900 border-slate-900 text-white hover:bg-slate-800" 
-          : "bg-slate-50 border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300"
-        }`}
-    >
-      <Icon className={`w-4 h-4 ${optedIn ? "text-white" : "text-slate-400"}`} />
-      <span className="capitalize">{type.toLowerCase()}</span>
-    </button>
-  );
 }

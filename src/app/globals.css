@@ -1,64 +1,63 @@
 @import "tailwindcss";
 
-/* ─── Ideal Hostel · Opificio Round Brand Tokens ──────────── */
-/* Palette: Pitch-Black + Safety-Yellow + Crisp-White          */
+/* ─── Pristine Light Mode Design Tokens ───────────────────── */
 
 :root {
   /* Surfaces */
-  --background: #0a0a0a;        /* pitch black canvas */
-  --surface: #141414;           /* dark card background */
-  --surface-hover: #1e1e1e;     /* subtle hover */
-  --surface-active: #252525;    /* active press */
-  --surface-elevated: #1a1a1a;  /* modals / sheets */
+  --background: #f8fafc;        /* slate-50: clean crisp off-white canvas */
+  --surface: #ffffff;           /* pure white cards */
+  --surface-hover: #f1f5f9;     /* slate-100 */
+  --surface-active: #e2e8f0;    /* slate-200 */
+  --surface-elevated: #ffffff;  /* sheets and modals */
 
-  /* Borders */
-  --border: #2a2a2a;            /* dark border */
-  --border-light: #1e1e1e;      /* very subtle divider */
-  --border-focus: #f5c800;      /* safety yellow focus ring */
-  --border-strong: #383838;     /* stronger border */
+  /* Borders - High contrast, sharp definitions for middle-aged legibility */
+  --border: #e2e8f0;            /* slate-200 */
+  --border-light: #f1f5f9;      /* slate-100 */
+  --border-focus: #64748b;      /* slate-500 */
+  --border-strong: #cbd5e1;     /* slate-300 */
 
-  /* Text */
-  --foreground: #ffffff;        /* crisp white text */
-  --muted: #d1d1d1;             /* light grey secondary text */
-  --muted-foreground: #888888;  /* tertiary hints */
+  /* Text - High contrast deep slate tones */
+  --foreground: #0f172a;        /* slate-900: sharp dark text */
+  --muted: #334155;             /* slate-700: clear high-contrast secondary text */
+  --muted-foreground: #64748b;  /* slate-500: tertiary hints/timestamps */
 
   /* Accents */
-  --accent: #f5c800;            /* safety yellow accent */
-  --accent-foreground: #0a0a0a; /* black on yellow */
-  --accent-hover: #ffd700;      /* brighter gold on hover */
+  --accent: #0f172a;            /* slate-900 */
+  --accent-foreground: #ffffff;
+  --accent-hover: #1e293b;      /* slate-800 */
 
-  /* Primary Brand: Yellow */
-  --primary: #f5c800;           /* safety yellow */
-  --primary-foreground: #0a0a0a;
-  --primary-hover: #ffd700;
+  /* Primary Brand */
+  --primary: #2563eb;           /* royal blue */
+  --primary-foreground: #ffffff;
+  --primary-hover: #1d4ed8;
 
-  /* Semantic Colours (adapted for dark theme) */
-  --success: #22c55e;           /* green-500 */
-  --success-light: #052e16;     /* dark green bg */
-  --success-border: #166534;    /* green-800 */
-  --success-text: #86efac;      /* green-300 */
+  /* Semantic - Vibrant, high-contrast signals */
+  --success: #16a34a;           /* green-600 */
+  --success-light: #f0fdf4;     /* green-50 */
+  --success-border: #bbf7d0;    /* green-200 */
+  --success-text: #14532d;      /* green-900 */
 
-  --warning: #f5c800;           /* yellow = brand warning */
-  --warning-light: #1a1500;     /* dark yellow bg */
-  --warning-border: #78620a;    /* dark yellow border */
-  --warning-text: #fef08a;      /* yellow-200 */
+  --warning: #d97706;           /* amber-600 */
+  --warning-light: #fffbeb;     /* amber-50 */
+  --warning-border: #fde68a;    /* amber-200 */
+  --warning-text: #78350f;      /* amber-900 */
 
-  --danger: #ef4444;            /* red-500 */
-  --danger-light: #2d0a0a;      /* dark red bg */
-  --danger-border: #991b1b;     /* red-800 */
-  --danger-text: #fca5a5;       /* red-300 */
+  --danger: #dc2626;            /* red-600 */
+  --danger-light: #fef2f2;      /* red-50 */
+  --danger-border: #fecaca;     /* red-200 */
+  --danger-text: #7f1d1d;       /* red-900 */
 
-  --info: #3b82f6;              /* blue-500 */
-  --info-light: #0c1a3d;        /* dark blue bg */
-  --info-border: #1e40af;       /* blue-800 */
-  --info-text: #93c5fd;         /* blue-300 */
+  --info: #2563eb;              /* blue-600 */
+  --info-light: #eff6ff;        /* blue-50 */
+  --info-border: #bfdbfe;       /* blue-200 */
+  --info-text: #1e3a8a;         /* blue-900 */
 
   /* Sidebar */
-  --sidebar-bg: #0a0a0a;        /* pitch black sidebar */
-  --sidebar-border: #1e1e1e;
-  --sidebar-item-hover: #1a1a1a;
-  --sidebar-item-active: #f5c800;     /* yellow active */
-  --sidebar-item-active-text: #0a0a0a; /* black text on yellow */
+  --sidebar-bg: #ffffff;
+  --sidebar-border: #e2e8f0;
+  --sidebar-item-hover: #f8fafc;
+  --sidebar-item-active: #0f172a;
+  --sidebar-item-active-text: #ffffff;
 
   /* Radius */
   --radius-sm: 6px;
@@ -118,26 +117,36 @@
 }
 
 html {
-  background-color: #0a0a0a;
-  color: #ffffff;
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
 body {
-  background-color: var(--background);
+  background-color: #f8fafc;
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ─── Custom Card Shadow ─────────────────────────────────── */
+/* ─── Custom Refined Card Shadow ────────────────────────── */
 
 .card-shadow {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.6), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+  background-color: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--border);
+}
+
+.card-shadow-3d {
+  background-color: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .card-shadow-hover:hover {
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
 }
 
 /* ─── Scrollbar ─────────────────────────────────────────── */
@@ -150,17 +159,17 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #333333;
+  background: #cbd5e1;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #f5c800;
+  background: #94a3b8;
 }
 
 /* ─── Focus Ring ────────────────────────────────────────── */
 
 .focus-ring {
-  @apply outline-none ring-2 ring-yellow-400 ring-offset-2 ring-offset-black;
+  @apply outline-none ring-2 ring-slate-400 ring-offset-2 ring-offset-background;
 }
 
 /* ─── Transitions ───────────────────────────────────────── */

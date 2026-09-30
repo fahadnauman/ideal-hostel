@@ -15,20 +15,37 @@ import {
   ExternalLink,
 } from "lucide-react";
 import type { OwnerSettings } from "@/types";
+import { mockFloors, mockRoomsByFloor } from "@/data/mock-rooms";
 
 export default function PropertiesPage() {
   const [settings, setSettings] = useState<OwnerSettings>({
-    propertyName: "Sunrise PG Hostel",
+    propertyName: "Ideal Hostel",
     ownerName: "Fahad Nauman",
     ownerPhone: "+91 98765 00000",
-    upiId: "sunrisepg@okhdfcbank",
-    merchantName: "Sunrise PG Accommodations",
+    upiId: "idealhostel@okhdfcbank",
+    merchantName: "Ideal Enterprises",
     qrImageUrl: null,
     breakfastWindow: "07:30 AM - 09:30 AM",
     lunchWindow: "01:00 PM - 03:00 PM",
     dinnerWindow: "08:00 PM - 10:00 PM",
     updatedAt: new Date().toISOString(),
   });
+  const [rooms, setRooms] = useState<Record<string, any>>(mockRoomsByFloor);
+
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const res = await fetch("/api/rooms");
+        if (res.ok) {
+          const data = await res.json();
+          setRooms(data.rooms);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    fetchRooms();
+  }, []);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -38,6 +55,19 @@ export default function PropertiesPage() {
       })
       .catch((err) => console.error(err));
   }, []);
+
+  const totalFloors = mockFloors.length;
+  let totalCapacity = 0;
+  let activeResidents = 0;
+
+  for (const floorRooms of Object.values(rooms)) {
+    for (const room of floorRooms) {
+      totalCapacity += room.beds.length;
+      activeResidents += room.beds.filter((b: any) => b.status === "OCCUPIED" || b.status === "ENDING_SOON").length;
+    }
+  }
+
+  const occupancyPercent = totalCapacity > 0 ? Math.round((activeResidents / totalCapacity) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -105,23 +135,23 @@ export default function PropertiesPage() {
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Total Floors
             </span>
-            <p className="text-2xl font-black text-slate-900">3 Floors</p>
-            <span className="text-[11px] text-slate-400">Ground, 1st &amp; 2nd</span>
+            <p className="text-2xl font-black text-slate-900">{totalFloors} Floors</p>
+            <span className="text-[11px] text-slate-400">Basement, 1st &amp; 2nd</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Total Capacity
             </span>
-            <p className="text-2xl font-black text-slate-900">120 Beds</p>
-            <span className="text-[11px] text-emerald-600 font-semibold">81.6% Occupancy</span>
+            <p className="text-2xl font-black text-slate-900">{totalCapacity} Beds</p>
+            <span className="text-[11px] text-emerald-600 font-semibold">{occupancyPercent}% Occupancy</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
               Active Residents
             </span>
-            <p className="text-2xl font-black text-slate-900">98 Tenants</p>
+            <p className="text-2xl font-black text-slate-900">{activeResidents} Tenants</p>
             <Link href="/dashboard/tenants" className="text-[11px] text-blue-600 font-bold hover:underline">
               View Directory &rarr;
             </Link>

@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ideal Hostel — Hostel Management",
+  title: "PGHQ Standard — PG & Hostel Management",
   description:
-    "Modern hostel management platform for Ideal Hostel by Opificio Round.",
+    "Modern paying-guest and hostel management platform for property owners.",
 };
 
 export default function RootLayout({
@@ -29,7 +29,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className="min-h-full bg-[#0a0a0a] text-white antialiased font-sans selection:bg-yellow-400 selection:text-black">
+      <body className="min-h-full text-slate-900 antialiased font-sans selection:bg-slate-900 selection:text-white">
         {children}
       </body>
     </html>
