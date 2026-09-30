@@ -27,9 +27,11 @@ import {
   HeartHandshake,
   Check,
   CreditCard,
+  Upload,
 } from "lucide-react";
 import type { Tenant, PaymentRecord, PaymentStatus, PaymentMode } from "@/types";
 import RecordPaymentModal from "@/components/finance/record-payment-modal";
+import BulkImportModal from "@/components/tenants/bulk-import-modal";
 
 const paymentStatusConfig: Record<
   PaymentStatus,
@@ -78,6 +80,7 @@ export default function TenantsPage() {
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
 
   // Load tenants from API
   const fetchTenants = async () => {
@@ -250,6 +253,13 @@ export default function TenantsPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setIsBulkImportOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs sm:text-sm transition-default min-h-[44px]"
+          >
+            <Upload className="w-4 h-4 text-indigo-600" />
+            <span>Bulk Import</span>
+          </button>
           <a
             href="/dashboard/rooms"
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 font-bold text-xs sm:text-sm transition-default min-h-[44px]"
@@ -1017,6 +1027,16 @@ export default function TenantsPage() {
           <span>{toastMessage}</span>
         </div>
       )}
+
+      {/* Bulk Import Modal */}
+      <BulkImportModal
+        isOpen={isBulkImportOpen}
+        onClose={() => setIsBulkImportOpen(false)}
+        onSuccess={() => {
+          showToast("Bulk import successful!");
+          fetchTenants();
+        }}
+      />
     </div>
   );
 }
