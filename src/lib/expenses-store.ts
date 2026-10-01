@@ -1,0 +1,55 @@
+export type Expense = {
+  id: string;
+  category: string;
+  amount: number;
+  date: string;
+  status: "PAID" | "UNPAID";
+};
+
+// Use globalThis to maintain state across hot reloads in development
+const globalForExpenses = globalThis as unknown as {
+  __pghq_expenses: Expense[];
+};
+
+if (!globalForExpenses.__pghq_expenses) {
+  globalForExpenses.__pghq_expenses = [
+    {
+      id: "exp-1",
+      category: "Electricity Bill",
+      amount: 4500,
+      date: new Date().toISOString(),
+      status: "PAID"
+    },
+    {
+      id: "exp-2",
+      category: "Cleaning Supplies",
+      amount: 1200,
+      date: new Date().toISOString(),
+      status: "PAID"
+    }
+  ];
+}
+
+export function getAllExpenses(): Expense[] {
+  return [...globalForExpenses.__pghq_expenses].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+}
+
+export function addExpense(expense: Omit<Expense, "id">): Expense {
+  const newExpense: Expense = {
+    ...expense,
+    id: `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+  };
+  globalForExpenses.__pghq_expenses.unshift(newExpense);
+  return newExpense;
+}
+
+export function updateExpenseStatus(id: string, status: "PAID" | "UNPAID"): Expense | null {
+  const index = globalForExpenses.__pghq_expenses.findIndex(e => e.id === id);
+  if (index !== -1) {
+    globalForExpenses.__pghq_expenses[index].status = status;
+    return globalForExpenses.__pghq_expenses[index];
+  }
+  return null;
+}

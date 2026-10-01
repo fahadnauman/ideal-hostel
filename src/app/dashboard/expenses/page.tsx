@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { PieChart, IndianRupee, TrendingDown, TrendingUp, Receipt, Plus, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { PieChart, IndianRupee, TrendingDown, TrendingUp, Receipt, Plus, X, Loader2 } from "lucide-react";
 import { mockPaymentHistory } from "@/data/mock-rooms";
 
 export default function ExpensesDashboard() {
@@ -15,6 +15,22 @@ export default function ExpensesDashboard() {
   // Expenses State
   const [expenses, setExpenses] = useState<{ id: string; category: string; amount: number; date: string; status: string }[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/expenses")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setExpenses(data.data);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Failed to fetch expenses:", err);
+        setLoading(false);
+      });
+  }, []);
 
   const totalExpenses = expenses.filter(e => e.status === "PAID").reduce((sum, e) => sum + e.amount, 0);
   const pendingExpenses = expenses.filter(e => e.status === "UNPAID").reduce((sum, e) => sum + e.amount, 0);
@@ -109,33 +125,48 @@ export default function ExpensesDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border-light">
-              {expenses.map((expense) => (
-                <tr key={expense.id} className="hover:bg-surface-hover/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-                        <Receipt className="w-4 h-4 text-slate-500" />
-                      </div>
-                      <span className="font-medium text-foreground">{expense.category}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-medium text-muted-foreground">
-                    {new Date(expense.date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-right tabular-nums">
-                    ₹{expense.amount.toLocaleString("en-IN")}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border
-                      ${expense.status === 'PAID' 
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                        : 'bg-rose-50 text-rose-700 border-rose-200'}`}
-                    >
-                      {expense.status}
-                    </span>
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
+                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-500" />
+                    Loading expenses...
                   </td>
                 </tr>
-              ))}
+              ) : expenses.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
+                    No expenses recorded yet.
+                  </td>
+                </tr>
+              ) : (
+                expenses.map((expense) => (
+                  <tr key={expense.id} className="hover:bg-surface-hover/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                          <Receipt className="w-4 h-4 text-slate-500" />
+                        </div>
+                        <span className="font-medium text-foreground">{expense.category}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-medium text-muted-foreground">
+                      {new Date(expense.date).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-right tabular-nums">
+                      ₹{expense.amount.toLocaleString("en-IN")}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border
+                        ${expense.status === 'PAID' 
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                          : 'bg-rose-50 text-rose-700 border-rose-200'}`}
+                      >
+                        {expense.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -182,17 +213,33 @@ function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: 
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState("PAID");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!category || !amount) return;
-    onSave({
-      id: `exp-${Date.now()}`,
-      category,
-      amount: Number(amount),
-      date: new Date().toISOString(),
-      status
-    });
+    
+    setIsSubmitting(true);
+    
+    try {
+      const res = await fetch("/api/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category, amount, status }),
+      });
+      
+      const data = await res.json();
+      if (data.success) {
+        onSave(data.data);
+      } else {
+        alert("Failed to record expense");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error saving expense");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -200,7 +247,7 @@ function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: 
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <h2 className="text-lg font-bold text-slate-900">Record New Expense</h2>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full">
+          <button onClick={onClose} disabled={isSubmitting} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full disabled:opacity-50">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -210,10 +257,11 @@ function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: 
             <input 
               type="text" 
               required
+              disabled={isSubmitting}
               value={category} 
               onChange={e => setCategory(e.target.value)} 
               placeholder="e.g., Electricity Bill, Cleaning Supplies"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50" 
             />
           </div>
           <div>
@@ -221,26 +269,31 @@ function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: 
             <input 
               type="number" 
               required
+              disabled={isSubmitting}
               value={amount} 
               onChange={e => setAmount(e.target.value)} 
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50" 
             />
           </div>
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-1">Status</label>
             <select 
               value={status} 
+              disabled={isSubmitting}
               onChange={e => setStatus(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
             >
               <option value="PAID">Paid</option>
               <option value="UNPAID">Unpaid</option>
             </select>
           </div>
           <div className="pt-4 flex justify-end gap-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-lg">Cancel</button>
-            <button type="submit" className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700">Save Expense</button>
+            <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-lg disabled:opacity-50">Cancel</button>
+            <button type="submit" disabled={isSubmitting} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-50">
+              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              {isSubmitting ? "Saving..." : "Save Expense"}
+            </button>
           </div>
         </form>
       </div>
