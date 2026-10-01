@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { PieChart, IndianRupee, TrendingDown, TrendingUp, Receipt, Plus, X, Loader2 } from "lucide-react";
+import { PieChart, IndianRupee, TrendingDown, TrendingUp, Receipt, Plus, X, Loader2, Pencil, Trash2 } from "lucide-react";
 import { mockPaymentHistory } from "@/data/mock-rooms";
 
 export default function ExpensesDashboard() {
@@ -15,6 +15,7 @@ export default function ExpensesDashboard() {
   // Expenses State
   const [expenses, setExpenses] = useState<{ id: string; category: string; amount: number; date: string; status: string }[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -53,7 +54,10 @@ export default function ExpensesDashboard() {
         </div>
         
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => {
+            setEditingExpense(null);
+            setIsModalOpen(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground text-sm font-semibold rounded-xl hover:bg-accent-hover transition-default"
         >
           <Plus className="w-4 h-4" />
@@ -122,6 +126,7 @@ export default function ExpensesDashboard() {
                 <th className="px-6 py-3 font-semibold">Date</th>
                 <th className="px-6 py-3 font-semibold text-right">Amount</th>
                 <th className="px-6 py-3 font-semibold text-right">Status</th>
+                <th className="px-6 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-light">
@@ -164,6 +169,41 @@ export default function ExpensesDashboard() {
                         {expense.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          onClick={() => {
+                            setEditingExpense(expense);
+                            setIsModalOpen(true);
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={async () => {
+                            if (confirm(`Are you sure you want to delete ${expense.category}?`)) {
+                              try {
+                                const res = await fetch(`/api/expenses/${expense.id}`, { method: "DELETE" });
+                                if (res.ok) {
+                                  setExpenses(expenses.filter(e => e.id !== expense.id));
+                                } else {
+                                  alert("Failed to delete expense");
+                                }
+                              } catch (err) {
+                                console.error(err);
+                                alert("Error deleting expense");
+                              }
+                            }
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
@@ -173,10 +213,19 @@ export default function ExpensesDashboard() {
       </div>
       {isModalOpen && (
         <RecordExpenseModal 
-          onClose={() => setIsModalOpen(false)} 
-          onSave={(expense) => {
-            setExpenses([expense, ...expenses]);
+          expenseToEdit={editingExpense}
+          onClose={() => {
             setIsModalOpen(false);
+            setEditingExpense(null);
+          }} 
+          onSave={(expense) => {
+            if (editingExpense) {
+              setExpenses(expenses.map(e => e.id === expense.id ? expense : e));
+            } else {
+              setExpenses([expense, ...expenses]);
+            }
+            setIsModalOpen(false);
+            setEditingExpense(null);
           }} 
         />
       )}
@@ -209,10 +258,10 @@ function KpiCard({ title, amount, icon: Icon, color, subtitle }: { title: string
   );
 }
 
-function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: (expense: any) => void }) {
-  const [category, setCategory] = useState("");
-  const [amount, setAmount] = useState("");
-  const [status, setStatus] = useState("PAID");
+function RecordExpenseModal({ onClose, onSave, expenseToEdit }: { onClose: () => void; onSave: (expense: any) => void; expenseToEdit?: any }) {
+  const [category, setCategory] = useState(expenseToEdit?.category || "");
+  const [amount, setAmount] = useState(expenseToEdit?.amount?.toString() || "");
+  const [status, setStatus] = useState(expenseToEdit?.status || "PAID");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -222,8 +271,11 @@ function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: 
     setIsSubmitting(true);
     
     try {
-      const res = await fetch("/api/expenses", {
-        method: "POST",
+      const url = expenseToEdit ? `/api/expenses/${expenseToEdit.id}` : "/api/expenses";
+      const method = expenseToEdit ? "PUT" : "POST";
+      
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ category, amount, status }),
       });
@@ -232,11 +284,11 @@ function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: 
       if (data.success) {
         onSave(data.data);
       } else {
-        alert("Failed to record expense");
+        alert(`Failed to ${expenseToEdit ? 'update' : 'record'} expense`);
       }
     } catch (err) {
       console.error(err);
-      alert("Error saving expense");
+      alert(`Error ${expenseToEdit ? 'updating' : 'saving'} expense`);
     } finally {
       setIsSubmitting(false);
     }
@@ -246,7 +298,7 @@ function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-900">Record New Expense</h2>
+          <h2 className="text-lg font-bold text-slate-900">{expenseToEdit ? 'Edit Expense' : 'Record New Expense'}</h2>
           <button onClick={onClose} disabled={isSubmitting} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full disabled:opacity-50">
             <X className="w-5 h-5" />
           </button>

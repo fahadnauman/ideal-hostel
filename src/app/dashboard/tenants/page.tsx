@@ -28,6 +28,7 @@ import {
   Check,
   CreditCard,
   Upload,
+  Trash2,
 } from "lucide-react";
 import type { Tenant, PaymentRecord, PaymentStatus, PaymentMode } from "@/types";
 import RecordPaymentModal from "@/components/finance/record-payment-modal";
@@ -503,13 +504,40 @@ export default function TenantsPage() {
                           >
                             <MessageCircle className="w-4 h-4" />
                           </a>
-                          <a
-                            href={`tel:${tenant.phone.replace(/[^0-9+]/g, "")}`}
-                            title="Call Tenant"
-                            className="p-2 rounded-lg text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-default cursor-pointer"
+                          <button
+                            onClick={() => {
+                              setSelectedTenant(tenant);
+                              setEditFormData({ ...tenant });
+                              setIsEditing(true);
+                              setIsDrawerOpen(true);
+                            }}
+                            className="p-2 rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-default cursor-pointer"
+                            title="Edit Profile"
                           >
-                            <Phone className="w-4 h-4" />
-                          </a>
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (confirm(`Are you sure you want to delete ${tenant.name}? This will free up their bed.`)) {
+                                try {
+                                  const res = await fetch(`/api/tenants?id=${tenant.id}`, { method: "DELETE" });
+                                  if (res.ok) {
+                                    setTenants(prev => prev.filter(t => t.id !== tenant.id));
+                                    showToast("Tenant deleted successfully");
+                                  } else {
+                                    alert("Failed to delete tenant");
+                                  }
+                                } catch (err) {
+                                  console.error(err);
+                                  alert("Error deleting tenant");
+                                }
+                              }
+                            }}
+                            className="p-2 rounded-lg text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-default cursor-pointer"
+                            title="Delete Tenant"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => openTenantDrawer(tenant)}
                             className="p-2 rounded-lg text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-default cursor-pointer"
@@ -565,13 +593,32 @@ export default function TenantsPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  onClick={async () => {
+                    if (confirm(`Are you sure you want to delete ${selectedTenant.name}?`)) {
+                      try {
+                        const res = await fetch(`/api/tenants?id=${selectedTenant.id}`, { method: "DELETE" });
+                        if (res.ok) {
+                          setTenants(prev => prev.filter(t => t.id !== selectedTenant.id));
+                          closeDrawer();
+                          showToast("Tenant deleted successfully");
+                        }
+                      } catch (err) {}
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-default cursor-pointer"
+                  title="Delete Tenant"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Delete</span>
+                </button>
                 {!isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition-default cursor-pointer"
                   >
                     <Edit className="w-3.5 h-3.5 text-slate-600" />
-                    <span>Edit Profile</span>
+                    <span className="hidden sm:inline">Edit Profile</span>
                   </button>
                 )}
 

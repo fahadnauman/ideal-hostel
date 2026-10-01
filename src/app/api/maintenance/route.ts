@@ -3,6 +3,7 @@ import {
   getAllTasks,
   createTask,
   updateTaskStatus,
+  updateTask,
   deleteTask,
 } from "@/lib/maintenance-store";
 import type { MaintenanceCategory, MaintenanceStatus } from "@/types";
@@ -129,6 +130,40 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: `Task status updated to ${status}`,
+      task: updated,
+    });
+  } catch (error) {
+    console.error("Error updating maintenance task:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to update maintenance task" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Task ID is required" },
+        { status: 400 }
+      );
+    }
+
+    const updated = updateTask(id, updates);
+    if (!updated) {
+      return NextResponse.json(
+        { success: false, error: "Task not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `Task updated successfully`,
       task: updated,
     });
   } catch (error) {

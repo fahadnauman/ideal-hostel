@@ -13,10 +13,7 @@ const id = () => `mock-${++_id}`;
 
 /* ─── Tenants ────────────────────────────────────────────── */
 
-import { getAllTenants } from "@/lib/tenants-store";
 const tenants: Record<string, Tenant> = {};
-const seed = getAllTenants();
-seed.forEach(t => tenants[t.id] = t);
 
 /* ─── Bed builder ────────────────────────────────────────── */
 
@@ -74,30 +71,30 @@ declare global {
 if (!globalThis.__pghq_rooms) {
   globalThis.__pghq_rooms = {
   "floor-b": [
-    room("floor-b", "B01", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-13"], [2, "OCCUPIED", "ten-1790825655719-14"]]),
-    room("floor-b", "B02", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-15"], [2, "OCCUPIED", "ten-1790825655719-16"]]),
-    room("floor-b", "B03", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-17"], [2, "OCCUPIED", "ten-1790825655719-18"]]),
-    room("floor-b", "B04", "SINGLE", [[1, "OCCUPIED", "ten-1790825655719-19"]]),
-    room("floor-b", "B05", "TRIPLE", [[1, "OCCUPIED", "ten-1790825655719-20"], [2, "OCCUPIED", "ten-1790825655719-22"], [3, "AVAILABLE"]]),
+    room("floor-b", "B01", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-b", "B02", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-b", "B03", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-b", "B04", "SINGLE", [[1, "AVAILABLE"]]),
+    room("floor-b", "B05", "TRIPLE", [[1, "AVAILABLE"], [2, "AVAILABLE"], [3, "AVAILABLE"]]),
   ],
   "floor-1": [
-    room("floor-1", "101", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-21"], [2, "OCCUPIED", "ten-1790825655719-23"]]),
-    room("floor-1", "102", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-30"], [2, "AVAILABLE"]]),
-    room("floor-1", "103", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-10"], [2, "OCCUPIED", "ten-1790825655719-31"]]),
-    room("floor-1", "104", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-11"], [2, "OCCUPIED", "ten-1790825655719-32"]]),
-    room("floor-1", "105", "SINGLE", [[1, "OCCUPIED", "ten-1790825655719-33"]]),
+    room("floor-1", "101", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-1", "102", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-1", "103", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-1", "104", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-1", "105", "SINGLE", [[1, "AVAILABLE"]]),
   ],
   "floor-2": [
-    room("floor-2", "201", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-12"], [2, "OCCUPIED", "ten-1790825655719-28"]]),
-    room("floor-2", "202", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-9"], [2, "OCCUPIED", "ten-1790825655719-29"]]),
-    room("floor-2", "203", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-27"], [2, "OCCUPIED", "ten-1790825655719-34"]]),
+    room("floor-2", "201", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-2", "202", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-2", "203", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
     room("floor-2", "204", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
-    room("floor-2", "205", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-3"], [2, "OCCUPIED", "ten-1790825655719-4"]]),
-    room("floor-2", "206", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-5"], [2, "OCCUPIED", "ten-1790825655719-6"]]),
-    room("floor-2", "207", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-7"], [2, "OCCUPIED", "ten-1790825655719-8"]]),
-    room("floor-2", "208", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655713-0"], [2, "OCCUPIED", "ten-1790825655719-26"]]),
-    room("floor-2", "209", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-24"], [2, "OCCUPIED", "ten-1790825655719-25"]]),
-    room("floor-2", "210", "DOUBLE", [[1, "OCCUPIED", "ten-1790825655719-1"], [2, "OCCUPIED", "ten-1790825655719-2"]]),
+    room("floor-2", "205", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-2", "206", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-2", "207", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-2", "208", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-2", "209", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
+    room("floor-2", "210", "DOUBLE", [[1, "AVAILABLE"], [2, "AVAILABLE"]]),
   ],
   };
 }

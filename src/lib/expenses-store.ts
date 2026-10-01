@@ -38,3 +38,21 @@ export function updateExpenseStatus(id: string, status: "PAID" | "UNPAID"): Expe
   }
   return null;
 }
+
+export function updateExpense(id: string, updates: Partial<Omit<Expense, "id">>): Expense | null {
+  const index = globalForExpenses.__pghq_expenses.findIndex(e => e.id === id);
+  if (index !== -1) {
+    globalForExpenses.__pghq_expenses[index] = {
+      ...globalForExpenses.__pghq_expenses[index],
+      ...updates
+    };
+    return globalForExpenses.__pghq_expenses[index];
+  }
+  return null;
+}
+
+export function deleteExpense(id: string): boolean {
+  const initialLength = globalForExpenses.__pghq_expenses.length;
+  globalForExpenses.__pghq_expenses = globalForExpenses.__pghq_expenses.filter(e => e.id !== id);
+  return globalForExpenses.__pghq_expenses.length < initialLength;
+}
