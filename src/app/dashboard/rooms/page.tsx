@@ -20,7 +20,7 @@ export default function RoomsPage() {
   const [viewMode, setViewMode] = useState<"cards" | "matrix">("cards");
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const [fetchedRooms, setFetchedRooms] = useState<Record<string, Room[]>>(mockRoomsByFloor);
+  const [fetchedRooms, setFetchedRooms] = useState<Record<string, Room[]>>({});
 
   useEffect(() => {
     async function fetchRooms() {

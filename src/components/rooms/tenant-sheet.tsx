@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import RecordPaymentModal from "@/components/finance/record-payment-modal";
 import { Room } from "@/types";
-import { mockRoomsByFloor } from "@/data/mock-rooms";
+
 
 interface TenantSheetProps {
   bed: Bed | null;
@@ -102,14 +102,9 @@ export default function TenantSheet({
 
   const [loading, setLoading] = useState(false);
 
-  // Use the provided room or fallback to searching mock data (for backwards compatibility)
+  // Use the provided room
   const resolvedRoom = useMemo(() => {
     if (room) return room;
-    if (!bed) return null;
-    for (const floor of Object.values(mockRoomsByFloor)) {
-      const found = floor.find(r => r.beds.some(b => b.id === bed.id));
-      if (found) return found;
-    }
     return null;
   }, [room, bed]);
 
