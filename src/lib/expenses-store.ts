@@ -12,22 +12,7 @@ const globalForExpenses = globalThis as unknown as {
 };
 
 if (!globalForExpenses.__pghq_expenses) {
-  globalForExpenses.__pghq_expenses = [
-    {
-      id: "exp-1",
-      category: "Electricity Bill",
-      amount: 4500,
-      date: new Date().toISOString(),
-      status: "PAID"
-    },
-    {
-      id: "exp-2",
-      category: "Cleaning Supplies",
-      amount: 1200,
-      date: new Date().toISOString(),
-      status: "PAID"
-    }
-  ];
+  globalForExpenses.__pghq_expenses = [];
 }
 
 export function getAllExpenses(): Expense[] {
