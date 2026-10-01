@@ -235,9 +235,9 @@ export default function RoomsPage() {
         </div>
       )}
 
-      {/* ── Tenant Slide-Over / Mobile Bottom Drawer ──── */}
       <TenantSheet
         bed={selectedBed}
+        room={selectedBed ? fetchedRooms[activeFloorId]?.find(r => r.beds.some(b => b.id === selectedBed.id)) || Object.values(fetchedRooms).flat().find(r => r.beds.some(b => b.id === selectedBed.id)) : null}
         paymentHistory={mockPaymentHistory}
         onClose={handleCloseSheet}
         onUpdate={(updatedTenant?: any) => {

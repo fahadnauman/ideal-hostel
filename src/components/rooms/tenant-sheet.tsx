@@ -36,6 +36,7 @@ import { mockRoomsByFloor } from "@/data/mock-rooms";
 
 interface TenantSheetProps {
   bed: Bed | null;
+  room?: Room | null;
   paymentHistory: PaymentRecord[];
   onClose: () => void;
   onUpdate?: (updatedTenant?: any) => void;
@@ -73,6 +74,7 @@ const paymentStatusConfig: Record<
 
 export default function TenantSheet({
   bed,
+  room,
   paymentHistory,
   onClose,
   onUpdate,
@@ -100,15 +102,16 @@ export default function TenantSheet({
 
   const [loading, setLoading] = useState(false);
 
-  // Derive room info
-  const room = useMemo(() => {
+  // Use the provided room or fallback to searching mock data (for backwards compatibility)
+  const resolvedRoom = useMemo(() => {
+    if (room) return room;
     if (!bed) return null;
     for (const floor of Object.values(mockRoomsByFloor)) {
       const found = floor.find(r => r.beds.some(b => b.id === bed.id));
       if (found) return found;
     }
     return null;
-  }, [bed]);
+  }, [room, bed]);
 
   // Reset form data on open or bed change
   useEffect(() => {
@@ -146,17 +149,20 @@ export default function TenantSheet({
           parentOccupation: "",
           parentPhone: "",
           paymentMethod: "UPI",
-          monthlyRent: room?.roomType === "TRIPLE" ? "4000" : "4500",
-          advanceDeposit: room?.roomType === "TRIPLE" ? "4000" : "4500",
+          monthlyRent: resolvedRoom?.roomType === "TRIPLE" ? "4000" : "4500",
+          advanceDeposit: resolvedRoom?.roomType === "TRIPLE" ? "4000" : "4500",
           checkInDate: new Date().toISOString().split("T")[0],
         });
       }
     }
-  }, [bed, room?.roomType]);
+  }, [bed, resolvedRoom?.roomType]);
 
   const handleAddTenant = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!bed || !room) return;
+    if (!bed || !resolvedRoom) {
+      alert("Error: Room data is missing.");
+      return;
+    }
     setLoading(true);
     try {
       const isEditing = !!bed.tenant;
@@ -168,7 +174,7 @@ export default function TenantSheet({
           tenantId: bed.tenant?.id,
           name: formData.name,
           phone: formData.phone,
-          roomNumber: room.roomNumber,
+          roomNumber: resolvedRoom.roomNumber,
           bedId: bed.id,
           monthlyRent: formData.monthlyRent,
           advanceDeposit: formData.advanceDeposit,
