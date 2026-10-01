@@ -1,6 +1,7 @@
 "use client";
 
-import { PieChart, IndianRupee, TrendingDown, TrendingUp, Receipt, Plus } from "lucide-react";
+import React, { useState } from "react";
+import { PieChart, IndianRupee, TrendingDown, TrendingUp, Receipt, Plus, X } from "lucide-react";
 import { mockPaymentHistory } from "@/data/mock-rooms";
 
 export default function ExpensesDashboard() {
@@ -11,8 +12,9 @@ export default function ExpensesDashboard() {
     .filter(p => p.status === "PAID" && p.month === currentMonth)
     .reduce((sum, p) => sum + p.amount, 0);
 
-  // Mock Expenses
-  const expenses: { id: string; category: string; amount: number; date: string; status: string }[] = [];
+  // Expenses State
+  const [expenses, setExpenses] = useState<{ id: string; category: string; amount: number; date: string; status: string }[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const totalExpenses = expenses.filter(e => e.status === "PAID").reduce((sum, e) => sum + e.amount, 0);
   const pendingExpenses = expenses.filter(e => e.status === "UNPAID").reduce((sum, e) => sum + e.amount, 0);
@@ -34,7 +36,10 @@ export default function ExpensesDashboard() {
           </div>
         </div>
         
-        <button className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground text-sm font-semibold rounded-xl hover:bg-accent-hover transition-default">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground text-sm font-semibold rounded-xl hover:bg-accent-hover transition-default"
+        >
           <Plus className="w-4 h-4" />
           Record Expense
         </button>
@@ -135,6 +140,15 @@ export default function ExpensesDashboard() {
           </table>
         </div>
       </div>
+      {isModalOpen && (
+        <RecordExpenseModal 
+          onClose={() => setIsModalOpen(false)} 
+          onSave={(expense) => {
+            setExpenses([expense, ...expenses]);
+            setIsModalOpen(false);
+          }} 
+        />
+      )}
     </div>
   );
 }
@@ -159,6 +173,76 @@ function KpiCard({ title, amount, icon: Icon, color, subtitle }: { title: string
       <div className="mt-4">
         <div className="text-2xl font-semibold tracking-tight tabular-nums">₹{amount.toLocaleString("en-IN")}</div>
         <p className="text-[11px] text-muted-foreground mt-1">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function RecordExpenseModal({ onClose, onSave }: { onClose: () => void; onSave: (expense: any) => void }) {
+  const [category, setCategory] = useState("");
+  const [amount, setAmount] = useState("");
+  const [status, setStatus] = useState("PAID");
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!category || !amount) return;
+    onSave({
+      id: `exp-${Date.now()}`,
+      category,
+      amount: Number(amount),
+      date: new Date().toISOString(),
+      status
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <h2 className="text-lg font-bold text-slate-900">Record New Expense</h2>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-full">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <form onSubmit={handleSave} className="p-5 space-y-4 flex-1">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Category / Description</label>
+            <input 
+              type="text" 
+              required
+              value={category} 
+              onChange={e => setCategory(e.target.value)} 
+              placeholder="e.g., Electricity Bill, Cleaning Supplies"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Amount (₹)</label>
+            <input 
+              type="number" 
+              required
+              value={amount} 
+              onChange={e => setAmount(e.target.value)} 
+              placeholder="0.00"
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1">Status</label>
+            <select 
+              value={status} 
+              onChange={e => setStatus(e.target.value)}
+              className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="PAID">Paid</option>
+              <option value="UNPAID">Unpaid</option>
+            </select>
+          </div>
+          <div className="pt-4 flex justify-end gap-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 rounded-lg">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700">Save Expense</button>
+          </div>
+        </form>
       </div>
     </div>
   );
